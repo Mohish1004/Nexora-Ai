@@ -1,8 +1,6 @@
 package com.finance.expenseanalyzer.controller;
 
-import com.finance.expenseanalyzer.dto.AiInsightsResponse;
-import com.finance.expenseanalyzer.dto.AiPredictionResponse;
-import com.finance.expenseanalyzer.dto.OcrScanResponse;
+import com.finance.expenseanalyzer.dto.*;
 import com.finance.expenseanalyzer.service.AiIntegrationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -33,5 +31,20 @@ public class AiIntegrationController {
         String base64Image = payload.get("image");
         String fileName = payload.get("fileName");
         return ResponseEntity.ok(aiIntegrationService.scanReceipt(base64Image, fileName));
+    }
+
+    @GetMapping("/anomalies")
+    public ResponseEntity<AnomalyResponse> getAnomalies() {
+        return ResponseEntity.ok(aiIntegrationService.getAnomalies());
+    }
+
+    @GetMapping("/segment")
+    public ResponseEntity<SegmentResponse> getSegment() {
+        return ResponseEntity.ok(aiIntegrationService.getSegment());
+    }
+
+    @GetMapping("/risk-score")
+    public ResponseEntity<RiskScoreResponse> getRiskScore() {
+        return ResponseEntity.ok(aiIntegrationService.getRiskScore());
     }
 }

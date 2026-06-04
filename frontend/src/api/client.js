@@ -1,6 +1,7 @@
 import axios from 'axios';
 
 const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api';
+const WS_URL = import.meta.env.VITE_WS_URL || 'ws://localhost:8000/api/ai/ws';
 
 export const apiClient = axios.create({
   baseURL: BASE_URL,
@@ -28,7 +29,6 @@ apiClient.interceptors.response.use(
     if (error.response && error.response.status === 401) {
       localStorage.removeItem('jwt_token');
       localStorage.removeItem('user_info');
-      // optional redirect logic handled at router boundary
     }
     return Promise.reject(error);
   }
@@ -69,4 +69,99 @@ export const aiApi = {
   getInsights: () => apiClient.get('/ai/insights'),
   getPredictions: () => apiClient.get('/ai/predict'),
   scanOcr: (base64Image, fileName) => apiClient.post('/ai/ocr', { image: base64Image, fileName }),
+  getAnomalies: () => apiClient.get('/ai/anomalies'),
+  getSegment: () => apiClient.get('/ai/segment'),
+  getRiskScore: () => apiClient.get('/ai/risk-score'),
 };
+
+// WebSocket client for real-time AI streaming
+export class AiWebSocket {
+  constructor() {
+    this.ws = null;
+    this.listeners = new Map();
+    this.reconnectAttempts = 0;
+    this.maxRetries = 5;
+  }
+
+  connect() {
+    try {
+      this.ws = new WebSocket(WS_URL);
+      this.ws.onopen = () => {
+        this.reconnectAttempts = 0;
+        this.emit('connected', true);
+        // Auto-ping every 30s
+        this.pingInterval = setInterval(() => {
+          this.send({ action: 'ping' });
+        }, 30000);
+      };
+      this.ws.onmessage = (event) => {
+        try {
+          const msg = JSON.parse(event.data);
+          this.emit(msg.type, msg.payload);
+          this.emit('message', msg);
+        } catch (e) {
+          // ignore parse errors
+        }
+      };
+      this.ws.onclose = () => {
+        clearInterval(this.pingInterval);
+        this.emit('connected', false);
+        this._reconnect();
+      };
+      this.ws.onerror = () => {
+        this.ws.close();
+      };
+    } catch (e) {
+      // WS not available
+    }
+    return this;
+  }
+
+  _reconnect() {
+    if (this.reconnectAttempts >= this.maxRetries) return;
+    this.reconnectAttempts++;
+    setTimeout(() => this.connect(), 2000 * this.reconnectAttempts);
+  }
+
+  send(data) {
+    if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+      this.ws.send(JSON.stringify(data));
+    }
+  }
+
+  analyze(expenses, income) {
+    this.send({ action: 'analyze', expenses, income });
+  }
+
+  on(event, callback) {
+    if (!this.listeners.has(event)) {
+      this.listeners.set(event, []);
+    }
+    this.listeners.get(event).push(callback);
+    return () => {
+      const arr = this.listeners.get(event);
+      if (arr) {
+        const idx = arr.indexOf(callback);
+        if (idx >= 0) arr.splice(idx, 1);
+      }
+    };
+  }
+
+  emit(event, data) {
+    const arr = this.listeners.get(event);
+    if (arr) {
+      arr.forEach((cb) => cb(data));
+    }
+  }
+
+  disconnect() {
+    clearInterval(this.pingInterval);
+    if (this.ws) {
+      this.ws.close();
+      this.ws = null;
+    }
+  }
+}
+
+// Singleton WebSocket instance
+export const aiWs = new AiWebSocket();

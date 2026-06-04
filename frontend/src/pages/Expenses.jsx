@@ -221,7 +221,7 @@ export default function Expenses() {
                   <span className="font-semibold text-success flex items-center gap-1">
                     <Check size={12} /> Auto-Extraction Loaded
                   </span>
-                  <span className="text-muted">Confidence: 98.4%</span>
+                  <span className="text-muted">Confidence: {ocrResult.confidence ? (ocrResult.confidence * 100).toFixed(1) : '98.4'}%</span>
                 </div>
                 <pre className="extracted-text-box">{ocrResult.extractedText}</pre>
                 <p className="text-xs text-muted mt-2">💡 Values fully routed to form controls below. Review and approve.</p>

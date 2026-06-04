@@ -16,4 +16,5 @@ public class OcrScanResponse {
     private LocalDate date;
     private String category;
     private String extractedText;
+    private Double confidence;
 }
