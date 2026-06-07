@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { SpeedInsights } from '@vercel/speed-insights/react';
 import Sidebar from './components/Sidebar';
 import Topbar from './components/Topbar';
 import Login from './pages/Login';
@@ -83,6 +84,7 @@ export default function App() {
           </Routes>
         )}
       </div>
+      <SpeedInsights />
     </BrowserRouter>
   );
 }
