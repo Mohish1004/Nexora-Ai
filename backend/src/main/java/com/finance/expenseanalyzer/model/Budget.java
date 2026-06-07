@@ -26,6 +26,6 @@ public class Budget {
     private Double monthlyLimit;
 
     // Format: YYYY-MM (e.g. "2026-05")
-    @Column(nullable = false)
+    @Column(name = "`month`", nullable = false)
     private String month;
 }
