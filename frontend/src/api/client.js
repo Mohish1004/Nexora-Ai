@@ -60,6 +60,13 @@ export const budgetApi = {
   setBudget: (data) => apiClient.post('/budgets', data),
 };
 
+export const goalApi = {
+  getAll: () => apiClient.get('/goals'),
+  create: (data) => apiClient.post('/goals', data),
+  update: (id, data) => apiClient.put(`/goals/${id}`, data),
+  delete: (id) => apiClient.delete(`/goals/${id}`),
+};
+
 export const analyticsApi = {
   getMonthly: (months = 6) => apiClient.get(`/analytics/monthly?months=${months}`),
   getCategory: (month = '') => apiClient.get(`/analytics/category${month ? `?month=${month}` : ''}`),

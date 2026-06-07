@@ -11,6 +11,8 @@ import BudgetPlanner from './pages/BudgetPlanner';
 import Reports from './pages/Reports';
 import Insights from './pages/Insights';
 import Profile from './pages/Profile';
+import CopilotWorkspace from './pages/CopilotWorkspace';
+import Goals from './pages/Goals';
 
 export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -73,17 +75,21 @@ export default function App() {
           {/* Landing page is always at root / */}
           <Route path="/" element={<Landing isAuthenticated={isAuthenticated} />} />
 
-          {/* Auth routes */}
+          {/* Auth routes - Redirect to /copilot on success */}
           <Route 
             path="/login" 
-            element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <Login onLoginSuccess={handleLoginSuccess} />} 
+            element={isAuthenticated ? <Navigate to="/copilot" replace /> : <Login onLoginSuccess={handleLoginSuccess} />} 
           />
           <Route 
             path="/register" 
-            element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <Register />} 
+            element={isAuthenticated ? <Navigate to="/copilot" replace /> : <Register />} 
           />
 
           {/* Authenticated Dashboard & Feature routes */}
+          <Route 
+            path="/copilot" 
+            element={isAuthenticated ? <Layout><CopilotWorkspace /></Layout> : <Navigate to="/login" replace />} 
+          />
           <Route 
             path="/dashboard" 
             element={isAuthenticated ? <Layout><Dashboard /></Layout> : <Navigate to="/login" replace />} 
@@ -95,6 +101,10 @@ export default function App() {
           <Route 
             path="/budget" 
             element={isAuthenticated ? <Layout><BudgetPlanner /></Layout> : <Navigate to="/login" replace />} 
+          />
+          <Route 
+            path="/goals" 
+            element={isAuthenticated ? <Layout><Goals /></Layout> : <Navigate to="/login" replace />} 
           />
           <Route 
             path="/reports" 

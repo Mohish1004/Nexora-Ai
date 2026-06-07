@@ -8,7 +8,8 @@ import {
   Sparkles, 
   User, 
   LogOut,
-  Wallet
+  Wallet,
+  Brain
 } from 'lucide-react';
 import './Sidebar.css';
 
@@ -17,11 +18,13 @@ export default function Sidebar({ onLogout, userInfo }) {
   const displayUser = userInfo || JSON.parse(localStorage.getItem('user_info') || '{}');
 
   const navItems = [
+    { path: '/copilot', label: 'AI Copilot', icon: Sparkles },
     { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { path: '/expenses', label: 'Expenses & OCR', icon: PlusCircle },
-    { path: '/budget', label: 'Budget Planner', icon: Target },
+    { path: '/budget', label: 'Budget Planner', icon: Wallet },
+    { path: '/goals', label: 'Milestone Goals', icon: Target },
     { path: '/reports', label: 'Analytics Reports', icon: PieChart },
-    { path: '/insights', label: 'AI Insights & Forecasts', icon: Sparkles },
+    { path: '/insights', label: 'AI Insights & Forecasts', icon: Brain },
     { path: '/profile', label: 'User Settings', icon: User },
   ];
 

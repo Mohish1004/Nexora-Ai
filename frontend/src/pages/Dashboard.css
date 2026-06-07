@@ -1,612 +1,300 @@
 /* ================================================================
-   DASHBOARD V2 — AI-FIRST FINANCIAL INTELLIGENCE
-   Primary viewport: AI Copilot
-   Secondary: Actionable intelligence only
-   Design language: Linear + Stripe + Copilot Money
+   DASHBOARD V2 — FINANCIAL MISSION CONTROL & STORYTELLING
+   Premium SaaS aesthetic with clean visual depth and indicators
    ================================================================ */
 
-.dashboard-v2 {
-  display: grid;
-  grid-template-columns: 1fr 400px;
-  grid-template-rows: auto 1fr;
-  gap: 32px;
+.dashboard-v2-wrapper {
+  position: relative;
+  width: 100%;
   min-height: calc(100vh - 120px);
-  animation: dashFadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-@keyframes dashFadeIn {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-/* ---- Greeting Header ---- */
-.dash-greeting {
-  grid-column: 1 / -1;
+  padding: 1.5rem 0;
   display: flex;
-  align-items: flex-end;
+  flex-direction: column;
+}
+
+/* Glowing radials */
+.radial-mesh {
+  position: absolute;
+  top: -15%;
+  left: 25%;
+  width: 55%;
+  height: 55%;
+  background: radial-gradient(circle, rgba(99, 102, 241, 0.08) 0%, rgba(99, 102, 241, 0) 70%);
+  z-index: 1;
+  pointer-events: none;
+  filter: blur(60px);
+}
+
+.radial-mesh-two {
+  position: absolute;
+  bottom: 15%;
+  right: 5%;
+  width: 45%;
+  height: 45%;
+  background: radial-gradient(circle, rgba(244, 63, 94, 0.05) 0%, rgba(244, 63, 94, 0) 60%);
+  z-index: 1;
+  pointer-events: none;
+  filter: blur(60px);
+}
+
+/* Header section styling */
+.mission-control-header {
+  display: flex;
   justify-content: space-between;
-  gap: 24px;
-  padding-bottom: 8px;
+  align-items: center;
+  position: relative;
+  z-index: 10;
 }
 
-.greeting-text h1 {
-  font-size: 1.65rem;
-  font-weight: 700;
-  letter-spacing: -0.03em;
-  line-height: 1.2;
+.mission-control-header h1 {
+  font-size: 2rem;
+  letter-spacing: -0.04em;
+  font-weight: 850;
+  color: #ffffff;
 }
 
-.greeting-text p {
-  font-size: 0.88rem;
-  color: hsl(var(--text-muted));
-  margin-top: 4px;
+@media (max-width: 768px) {
+  .mission-control-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
 }
 
-.greeting-metrics {
+/* Main Grid Layout */
+.mission-control-grid {
+  display: grid;
+  grid-template-columns: 440px 1fr;
+  gap: 28px;
+  position: relative;
+  z-index: 10;
+}
+
+@media (max-width: 1100px) {
+  .mission-control-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Left Column Styling */
+.left-column-metrics {
   display: flex;
-  gap: 32px;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* Financial Health Score Dial styling */
+.health-dial-card {
+  padding: 24px;
+  background: var(--bg-glass);
+  border: 1px solid hsl(var(--border-color));
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  transition: all 0.3s ease;
+}
+
+.health-dial-card:hover {
+  box-shadow: var(--shadow-lg), 0 0 24px hsla(var(--primary), 0.05);
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.card-header h3 {
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: hsl(var(--text-muted));
+  letter-spacing: 0.05em;
+}
+
+.badge-tag {
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.badge-tag.primary { background: hsla(var(--primary), 0.12); color: #818cf8; border: 1px solid hsla(var(--primary), 0.2); }
+.badge-tag.warning { background: hsla(var(--warning), 0.12); color: #fbbf24; border: 1px solid hsla(var(--warning), 0.2); }
+
+.health-dial-container {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+@media (max-width: 480px) {
+  .health-dial-container {
+    flex-direction: column;
+    text-align: center;
+  }
+}
+
+.dial-circle-svg {
+  position: relative;
+  width: 120px;
+  height: 120px;
   flex-shrink: 0;
 }
 
-.metric-atom {
-  text-align: right;
+.dial-circle-svg svg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
 }
 
-.metric-atom .metric-label {
-  display: block;
-  font-size: 0.7rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: hsl(var(--text-muted));
-  margin-bottom: 2px;
+.dial-track {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.03);
+  stroke-width: 8;
 }
 
-.metric-atom .metric-value {
-  font-size: 1.5rem;
-  font-weight: 800;
-  letter-spacing: -0.02em;
-  line-height: 1.1;
+.dial-fill {
+  fill: none;
+  stroke-width: 8;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 1.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.metric-atom .metric-value.positive { color: hsl(var(--success)); }
-.metric-atom .metric-value.negative { color: hsl(var(--danger)); }
-.metric-atom .metric-value.neutral { color: hsl(var(--text-main)); }
-
-.metric-atom .metric-delta {
-  display: inline-flex;
+.dial-inner-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 3px;
-  font-size: 0.72rem;
-  font-weight: 600;
+  justify-content: center;
+}
+
+.dial-inner-text .score-val {
+  font-size: 2rem;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.dial-inner-text .score-lbl {
+  font-size: 0.6rem;
+  text-transform: uppercase;
+  color: hsl(var(--text-muted));
+  letter-spacing: 0.05em;
   margin-top: 2px;
 }
 
-.metric-delta.up { color: hsl(var(--success)); }
-.metric-delta.down { color: hsl(var(--danger)); }
-
-/* ---- AI Copilot Panel (Primary Viewport) ---- */
-.copilot-panel {
-  display: flex;
-  flex-direction: column;
-  background: var(--bg-glass);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
-  border: 1px solid hsl(var(--border-color));
-  border-radius: 20px;
-  overflow: hidden;
-  min-height: 520px;
-  box-shadow: var(--shadow-md);
-  transition: box-shadow 0.3s ease;
-}
-
-.copilot-panel:hover {
-  box-shadow: var(--shadow-lg);
-}
-
-.copilot-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 20px 24px;
-  border-bottom: 1px solid hsl(var(--border-color));
-  background: linear-gradient(135deg, hsla(var(--primary), 0.04), transparent);
-}
-
-.copilot-identity {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.copilot-avatar {
-  width: 40px;
-  height: 40px;
-  border-radius: 12px;
-  background: linear-gradient(135deg, hsl(243 85% 65%), hsl(270 80% 60%));
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  box-shadow: 0 4px 12px hsla(243 85% 65% / 0.3);
-}
-
-.copilot-identity h3 {
-  font-size: 0.95rem;
-  font-weight: 700;
-  letter-spacing: -0.01em;
-}
-
-.copilot-identity .status-line {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin-top: 1px;
-}
-
-.status-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: hsl(var(--success));
-  animation: statusPulse 2s ease-in-out infinite;
-}
-
-@keyframes statusPulse {
-  0%, 100% { opacity: 1; box-shadow: 0 0 0 0 hsla(var(--success), 0.4); }
-  50% { opacity: 0.7; box-shadow: 0 0 0 4px hsla(var(--success), 0); }
-}
-
-.status-line span {
-  font-size: 0.68rem;
-  font-weight: 600;
-  color: hsl(var(--success));
-}
-
-.copilot-badge {
-  font-size: 0.65rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  padding: 4px 10px;
-  border-radius: 6px;
-  background: hsla(var(--primary), 0.1);
-  color: hsl(var(--primary));
-  border: 1px solid hsla(var(--primary), 0.15);
-}
-
-/* Chat Messages */
-.copilot-messages {
+.health-rating-summary {
   flex: 1;
-  overflow-y: auto;
+}
+
+/* Actionable Directives list */
+.actionable-intelligence-section {
   padding: 24px;
+  background: var(--bg-glass);
+  border: 1px solid hsl(var(--border-color));
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+}
+
+.directives-list {
   display: flex;
   flex-direction: column;
   gap: 20px;
 }
 
-.msg-row {
+.directive-item {
   display: flex;
-  gap: 12px;
-  max-width: 88%;
-  animation: msgSlide 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  gap: 14px;
+  align-items: flex-start;
 }
 
-@keyframes msgSlide {
-  from { opacity: 0; transform: translateY(6px); }
+.directive-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.directive-item.problem .directive-icon {
+  background: rgba(244, 63, 94, 0.1);
+  color: #f43f5e;
+  border: 1px solid rgba(244, 63, 94, 0.15);
+}
+
+.directive-item.opportunity .directive-icon {
+  background: rgba(16, 185, 129, 0.1);
+  color: #10b981;
+  border: 1px solid rgba(16, 185, 129, 0.15);
+}
+
+.directive-item.recommendation .directive-icon {
+  background: rgba(99, 102, 241, 0.1);
+  color: #818cf8;
+  border: 1px solid rgba(99, 102, 241, 0.15);
+}
+
+.directive-details {
+  flex: 1;
+}
+
+.directive-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: hsl(var(--text-muted));
+  letter-spacing: 0.08em;
+  display: block;
+}
+
+/* Right Column Chart cards */
+.chart-card-v2 {
+  padding: 24px;
+  background: var(--bg-glass);
+  border: 1px solid hsl(var(--border-color));
+  border-radius: var(--radius-lg);
+}
+
+.explain-trend-outcome {
+  animation: slideDownFade 0.3s ease forwards;
+}
+
+@keyframes slideDownFade {
+  from { opacity: 0; transform: translateY(4px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
-.msg-row.user {
-  align-self: flex-end;
-  flex-direction: row-reverse;
-}
-
-.msg-icon {
-  width: 28px;
-  height: 28px;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  margin-top: 2px;
-}
-
-.msg-icon.bot {
-  background: linear-gradient(135deg, hsl(243 85% 65%), hsl(270 80% 60%));
-  color: white;
-}
-
-.msg-icon.user {
-  background: hsl(var(--bg-surface));
-  border: 1px solid hsl(var(--border-color));
-  color: hsl(var(--text-muted));
-}
-
-.msg-body {
-  padding: 14px 18px;
-  border-radius: 16px;
-  font-size: 0.85rem;
-  line-height: 1.6;
-  letter-spacing: -0.005em;
-}
-
-.msg-row:not(.user) .msg-body {
-  background: hsl(var(--bg-surface));
-  border: 1px solid hsl(var(--border-color));
-  border-top-left-radius: 4px;
-  color: hsl(var(--text-main));
-}
-
-.msg-row.user .msg-body {
-  background: linear-gradient(135deg, hsl(243 85% 62%), hsl(260 78% 58%));
-  color: white;
-  border-top-right-radius: 4px;
-}
-
-/* Quick Action Chips inside messages */
-.quick-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 12px;
-}
-
-.quick-chip {
-  font-size: 0.75rem;
-  font-weight: 600;
-  padding: 6px 14px;
-  border-radius: 20px;
-  background: transparent;
-  border: 1px solid hsl(var(--border-color));
-  color: hsl(var(--text-muted));
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.quick-chip:hover {
-  border-color: hsl(var(--primary));
-  color: hsl(var(--primary));
-  background: hsla(var(--primary), 0.06);
-}
-
-/* Chat Input */
-.copilot-input-area {
-  display: flex;
-  gap: 10px;
-  padding: 16px 20px;
-  border-top: 1px solid hsl(var(--border-color));
-  background: hsla(var(--bg-base), 0.5);
-}
-
-.copilot-input-area input {
-  flex: 1;
-  padding: 12px 16px;
-  font-family: var(--font-primary);
-  font-size: 0.88rem;
-  background: hsl(var(--bg-surface));
-  color: hsl(var(--text-main));
-  border: 1px solid hsl(var(--border-color));
-  border-radius: 12px;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
-}
-
-.copilot-input-area input:focus {
-  outline: none;
-  border-color: hsl(var(--primary));
-  box-shadow: 0 0 0 3px hsla(var(--primary), 0.1);
-}
-
-.copilot-input-area input::placeholder {
-  color: hsl(var(--text-muted));
-  opacity: 0.6;
-}
-
-.copilot-send-btn {
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
-  border: none;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(135deg, hsl(243 85% 62%), hsl(260 78% 58%));
-  color: white;
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
-  box-shadow: 0 4px 12px hsla(243 85% 60% / 0.25);
-}
-
-.copilot-send-btn:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 6px 16px hsla(243 85% 60% / 0.35);
-}
-
-.copilot-send-btn:active {
-  transform: translateY(0);
-}
-
-/* ---- Sidebar Intelligence Column ---- */
-.intel-sidebar {
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-}
-
-/* Intelligence Card */
-.intel-card {
-  background: var(--bg-glass);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
-  border: 1px solid hsl(var(--border-color));
-  border-radius: 16px;
+.forecast-summary-card {
   padding: 24px;
-  box-shadow: var(--shadow-md);
-  transition: box-shadow 0.3s ease, transform 0.3s ease;
+  background: var(--bg-glass);
+  border: 1px solid hsl(var(--border-color));
+  border-radius: var(--radius-lg);
 }
 
-.intel-card:hover {
-  box-shadow: var(--shadow-lg);
+.forecast-stats {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.02);
+  padding-bottom: 12px;
 }
 
-.intel-card-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 20px;
+.stat-node {
+  padding: 12px;
+  border-radius: 10px;
+  background: hsl(var(--bg-surface));
+  border: 1px solid hsl(var(--border-color));
 }
 
-.intel-card-header h4 {
-  font-size: 0.8rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: hsl(var(--text-muted));
-}
-
-.intel-card-header .intel-badge {
-  font-size: 0.62rem;
-  font-weight: 700;
-  padding: 3px 8px;
-  border-radius: 6px;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-}
-
-.intel-badge.ai { background: hsla(var(--primary), 0.1); color: hsl(var(--primary)); }
-.intel-badge.risk { background: hsla(var(--success), 0.1); color: hsl(var(--success)); }
-.intel-badge.alert { background: hsla(var(--danger), 0.1); color: hsl(var(--danger)); }
-.intel-badge.forecast { background: hsla(var(--warning), 0.1); color: hsl(var(--warning)); }
-
-/* Savings Rate Gauge */
-.savings-gauge {
-  text-align: center;
-  padding: 12px 0;
-}
-
-.gauge-ring {
-  position: relative;
-  width: 120px;
-  height: 120px;
-  margin: 0 auto;
-}
-
-.gauge-ring svg {
-  transform: rotate(-90deg);
-}
-
-.gauge-track {
-  fill: none;
-  stroke: hsl(var(--border-color));
-  stroke-width: 8;
-}
-
-.gauge-fill {
-  fill: none;
-  stroke-width: 8;
-  stroke-linecap: round;
-  transition: stroke-dashoffset 1s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.gauge-center {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  text-align: center;
-}
-
-.gauge-center .gauge-pct {
-  font-size: 1.6rem;
-  font-weight: 800;
-  letter-spacing: -0.03em;
-  line-height: 1;
-}
-
-.gauge-center .gauge-label {
-  font-size: 0.65rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: hsl(var(--text-muted));
-  margin-top: 2px;
-}
-
-.savings-detail {
-  margin-top: 16px;
-  font-size: 0.82rem;
-  color: hsl(var(--text-muted));
-  line-height: 1.5;
-}
-
-.savings-detail strong {
-  color: hsl(var(--text-main));
-}
-
-/* Insight Action Items */
-.action-items {
+.active-goals-mini {
   display: flex;
   flex-direction: column;
   gap: 12px;
 }
 
-.action-item {
+.goal-mini-item {
   display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  padding: 14px;
-  border-radius: 12px;
-  background: hsl(var(--bg-surface));
-  border: 1px solid hsl(var(--border-color));
-  transition: border-color 0.2s ease, background-color 0.2s ease;
-}
-
-.action-item:hover {
-  border-color: hsla(var(--primary), 0.3);
-}
-
-.action-icon {
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.action-icon.savings { background: hsla(var(--success), 0.1); color: hsl(var(--success)); }
-.action-icon.alert { background: hsla(var(--danger), 0.1); color: hsl(var(--danger)); }
-.action-icon.trend { background: hsla(var(--warning), 0.1); color: hsl(var(--warning)); }
-.action-icon.forecast { background: hsla(var(--primary), 0.1); color: hsl(var(--primary)); }
-
-.action-text {
-  flex: 1;
-  min-width: 0;
-}
-
-.action-text .action-title {
-  font-size: 0.82rem;
-  font-weight: 600;
-  color: hsl(var(--text-main));
-  line-height: 1.3;
-}
-
-.action-text .action-desc {
-  font-size: 0.73rem;
-  color: hsl(var(--text-muted));
-  margin-top: 3px;
-  line-height: 1.4;
-}
-
-/* Forecast Mini Card */
-.forecast-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 14px 0;
-  border-bottom: 1px solid hsl(var(--border-color));
-}
-
-.forecast-row:last-child { border-bottom: none; }
-
-.forecast-row .forecast-label {
-  font-size: 0.78rem;
-  color: hsl(var(--text-muted));
-  font-weight: 500;
-}
-
-.forecast-row .forecast-value {
-  font-size: 0.95rem;
-  font-weight: 700;
-}
-
-/* Recent Transactions Mini */
-.recent-txn {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 10px 0;
-  border-bottom: 1px solid hsla(var(--border-color), 0.5);
-}
-
-.recent-txn:last-child { border-bottom: none; }
-
-.txn-left {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  min-width: 0;
-}
-
-.txn-cat-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-
-.txn-name {
-  font-size: 0.8rem;
-  font-weight: 500;
-  color: hsl(var(--text-main));
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.txn-amount {
-  font-size: 0.82rem;
-  font-weight: 700;
-  color: hsl(var(--danger));
-  white-space: nowrap;
-}
-
-/* ---- Responsive ---- */
-@media (max-width: 1100px) {
-  .dashboard-v2 {
-    grid-template-columns: 1fr;
-    gap: 24px;
-  }
-
-  .copilot-panel {
-    min-height: 420px;
-  }
-
-  .greeting-metrics {
-    display: none;
-  }
-}
-
-@media (max-width: 640px) {
-  .dashboard-v2 {
-    gap: 16px;
-  }
-
-  .copilot-messages {
-    padding: 16px;
-  }
-
-  .msg-row {
-    max-width: 95%;
-  }
-
-  .intel-card {
-    padding: 18px;
-  }
-}
-
-/* ---- Loading Skeleton ---- */
-.skeleton-bar {
-  height: 14px;
-  background: linear-gradient(90deg, hsl(var(--border-color)) 25%, hsla(var(--border-color), 0.5) 50%, hsl(var(--border-color)) 75%);
-  background-size: 200% 100%;
-  animation: shimmer 1.5s infinite;
-  border-radius: 6px;
-}
-
-@keyframes shimmer {
-  0% { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
+  flex-direction: column;
 }

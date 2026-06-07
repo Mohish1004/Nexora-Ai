@@ -169,7 +169,7 @@ p {
   margin: 0 auto;
 }
 
-/* Glassmorphism Panels */
+/* Glassmorphism Panels & Glows */
 .glass-panel {
   background: var(--bg-glass);
   backdrop-filter: var(--glass-blur);
@@ -177,11 +177,68 @@ p {
   border: 1px solid hsl(var(--border-color));
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-md);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.4s ease;
 }
 
 .glass-panel:hover {
   box-shadow: var(--shadow-lg);
+  border-color: hsla(var(--primary), 0.2);
+}
+
+.glass-panel-glow {
+  composes: glass-panel;
+  position: relative;
+}
+
+.glass-panel-glow::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(135deg, hsla(var(--primary), 0.25), transparent 40%, transparent 60%, hsla(var(--accent), 0.25));
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  transition: opacity 0.4s ease;
+}
+
+/* Gradient Text & Accents */
+.text-gradient {
+  background: linear-gradient(135deg, hsl(var(--primary)) 20%, hsl(var(--accent)) 80%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.text-gradient-teal {
+  background: linear-gradient(135deg, hsl(var(--chart-5)) 20%, hsl(var(--primary)) 80%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.glow-overlay {
+  position: absolute;
+  width: 400px;
+  height: 400px;
+  border-radius: 50%;
+  background: radial-gradient(circle, hsla(var(--primary), 0.08) 0%, transparent 70%);
+  filter: blur(40px);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.glow-overlay-rose {
+  position: absolute;
+  width: 300px;
+  height: 300px;
+  border-radius: 50%;
+  background: radial-gradient(circle, hsla(var(--accent), 0.06) 0%, transparent 70%);
+  filter: blur(40px);
+  pointer-events: none;
+  z-index: 0;
 }
 
 /* Dynamic Grid Wrappers */
