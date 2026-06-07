@@ -19,7 +19,7 @@ import {
 import { authApi } from '../api/client';
 import './Landing.css';
 
-export default function Landing() {
+export default function Landing({ isAuthenticated }) {
   const navigate = useNavigate();
   const [ocrLoading, setOcrLoading] = useState(false);
   const [ocrResult, setOcrResult] = useState(null);
@@ -94,15 +94,21 @@ export default function Landing() {
           <h2>Centric<span>AI</span></h2>
         </div>
         <div className="header-actions">
-          <Link to="/login" className="link-signin text-sm font-semibold">Sign In</Link>
-          <Link to="/register" className="btn-signup btn-glow">Create Account</Link>
-          <button 
-            onClick={handleDemoLogin} 
-            disabled={demoLoading}
-            className="btn-demo text-xs font-bold"
-          >
-            {demoLoading ? 'Launching...' : 'Try Demo'}
-          </button>
+          {isAuthenticated ? (
+            <Link to="/dashboard" className="btn-signup btn-glow">Go to Dashboard</Link>
+          ) : (
+            <>
+              <Link to="/login" className="link-signin text-sm font-semibold">Sign In</Link>
+              <Link to="/register" className="btn-signup btn-glow">Create Account</Link>
+              <button 
+                onClick={handleDemoLogin} 
+                disabled={demoLoading}
+                className="btn-demo text-xs font-bold"
+              >
+                {demoLoading ? 'Launching...' : 'Try Demo'}
+              </button>
+            </>
+          )}
         </div>
       </header>
 
@@ -123,13 +129,22 @@ export default function Landing() {
         </p>
 
         <div className="hero-ctas mt-8 flex justify-center gap-4">
-          <Link to="/register" className="btn btn-primary px-8 py-3 rounded-full flex items-center gap-2">
-            <span>Get Started</span>
-            <ArrowRight size={16} />
-          </Link>
-          <button onClick={handleDemoLogin} className="btn btn-secondary px-8 py-3 rounded-full border border-color">
-            <span>Explore Demo Sandbox</span>
-          </button>
+          {isAuthenticated ? (
+            <Link to="/dashboard" className="btn btn-primary px-8 py-3 rounded-full flex items-center gap-2">
+              <span>Go to Dashboard</span>
+              <ArrowRight size={16} />
+            </Link>
+          ) : (
+            <>
+              <Link to="/register" className="btn btn-primary px-8 py-3 rounded-full flex items-center gap-2">
+                <span>Get Started</span>
+                <ArrowRight size={16} />
+              </Link>
+              <button onClick={handleDemoLogin} className="btn btn-secondary px-8 py-3 rounded-full border border-color">
+                <span>Explore Demo Sandbox</span>
+              </button>
+            </>
+          )}
         </div>
 
         {/* Floating Animated KPI Metrics */}

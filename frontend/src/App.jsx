@@ -54,38 +54,64 @@ export default function App() {
     setUserInfo(JSON.parse(localStorage.getItem('user_info') || '{}'));
   };
 
+  const Layout = ({ children }) => (
+    <>
+      <Sidebar onLogout={handleLogout} userInfo={userInfo} />
+      <div className="main-content">
+        <Topbar theme={theme} toggleTheme={toggleTheme} />
+        <main className="content-area">
+          {children}
+        </main>
+      </div>
+    </>
+  );
+
   return (
     <BrowserRouter>
       <div className="app-container">
-        {isAuthenticated ? (
-          <>
-            <Sidebar onLogout={handleLogout} userInfo={userInfo} />
-            <div className="main-content">
-              <Topbar theme={theme} toggleTheme={toggleTheme} />
-              <main className="content-area">
-                <Routes>
-                  <Route path="/dashboard" element={<Dashboard />} />
-                  <Route path="/expenses" element={<Expenses />} />
-                  <Route path="/budget" element={<BudgetPlanner />} />
-                  <Route path="/reports" element={<Reports />} />
-                  <Route path="/insights" element={<Insights />} />
-                  <Route path="/profile" element={<Profile onLogout={handleLogout} onProfileUpdate={handleProfileUpdate} />} />
-                  <Route path="/" element={<Navigate to="/dashboard" replace />} />
-                  <Route path="/login" element={<Navigate to="/dashboard" replace />} />
-                  <Route path="/register" element={<Navigate to="/dashboard" replace />} />
-                  <Route path="*" element={<Navigate to="/dashboard" replace />} />
-                </Routes>
-              </main>
-            </div>
-          </>
-        ) : (
-          <Routes>
-            <Route path="/" element={<Landing />} />
-            <Route path="/login" element={<Login onLoginSuccess={handleLoginSuccess} />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        )}
+        <Routes>
+          {/* Landing page is always at root / */}
+          <Route path="/" element={<Landing isAuthenticated={isAuthenticated} />} />
+
+          {/* Auth routes */}
+          <Route 
+            path="/login" 
+            element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <Login onLoginSuccess={handleLoginSuccess} />} 
+          />
+          <Route 
+            path="/register" 
+            element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <Register />} 
+          />
+
+          {/* Authenticated Dashboard & Feature routes */}
+          <Route 
+            path="/dashboard" 
+            element={isAuthenticated ? <Layout><Dashboard /></Layout> : <Navigate to="/login" replace />} 
+          />
+          <Route 
+            path="/expenses" 
+            element={isAuthenticated ? <Layout><Expenses /></Layout> : <Navigate to="/login" replace />} 
+          />
+          <Route 
+            path="/budget" 
+            element={isAuthenticated ? <Layout><BudgetPlanner /></Layout> : <Navigate to="/login" replace />} 
+          />
+          <Route 
+            path="/reports" 
+            element={isAuthenticated ? <Layout><Reports /></Layout> : <Navigate to="/login" replace />} 
+          />
+          <Route 
+            path="/insights" 
+            element={isAuthenticated ? <Layout><Insights /></Layout> : <Navigate to="/login" replace />} 
+          />
+          <Route 
+            path="/profile" 
+            element={isAuthenticated ? <Layout><Profile onLogout={handleLogout} onProfileUpdate={handleProfileUpdate} /></Layout> : <Navigate to="/login" replace />} 
+          />
+
+          {/* Wildcard redirects back to home/landing */}
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
       </div>
     </BrowserRouter>
   );
