@@ -20,6 +20,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Objects;
 
 
+import com.finance.expenseanalyzer.dto.UpdateProfileRequest;
+
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
 @RequestMapping("/api/auth")
@@ -68,5 +70,29 @@ public class AuthController {
         userRepository.save(Objects.requireNonNull(user));
 
         return ResponseEntity.ok(new MessageResponse("User registered successfully!"));
+    }
+
+    @PutMapping("/profile")
+    public ResponseEntity<?> updateProfile(@Valid @RequestBody UpdateProfileRequest updateProfileRequest) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated() || "anonymousUser".equals(authentication.getPrincipal())) {
+            return ResponseEntity.status(401).body(new MessageResponse("Error: Unauthorized"));
+        }
+
+        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+        User user = userRepository.findById(userDetails.getId())
+                .orElseThrow(() -> new RuntimeException("Error: User not found."));
+
+        if (updateProfileRequest.getName() != null && !updateProfileRequest.getName().isBlank()) {
+            user.setName(updateProfileRequest.getName());
+        }
+
+        if (updateProfileRequest.getPassword() != null && !updateProfileRequest.getPassword().isBlank()) {
+            user.setPassword(passwordEncoder.encode(updateProfileRequest.getPassword()));
+        }
+
+        userRepository.save(user);
+
+        return ResponseEntity.ok(new MessageResponse("Profile updated successfully!"));
     }
 }

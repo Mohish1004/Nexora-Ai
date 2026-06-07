@@ -275,4 +275,25 @@ public class AiIntegrationService {
             throw new RuntimeException("Risk Scoring engine is currently unreachable: " + ex.getMessage());
         }
     }
+
+    @SuppressWarnings("unchecked")
+    public Map<String, Object> getAiHealth() {
+        try {
+            if (aiServiceUrl == null || aiServiceUrl.trim().isEmpty()) {
+                throw new RuntimeException("AI Service URL is not configured.");
+            }
+            ResponseEntity<Map> response = restTemplate.getForEntity(
+                    aiServiceUrl + "/api/ai/health", Map.class);
+            if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
+                return (Map<String, Object>) response.getBody();
+            } else {
+                throw new RuntimeException("AI Service returned status code: " + response.getStatusCode());
+            }
+        } catch (Exception ex) {
+            Map<String, Object> fallback = new HashMap<>();
+            fallback.put("status", "offline");
+            fallback.put("error", ex.getMessage());
+            return fallback;
+        }
+    }
 }

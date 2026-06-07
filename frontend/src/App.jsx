@@ -15,12 +15,14 @@ import Profile from './pages/Profile';
 export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [theme, setTheme] = useState('light');
+  const [userInfo, setUserInfo] = useState({});
 
   useEffect(() => {
     // Check initial session
     const token = localStorage.getItem('jwt_token');
     if (token) {
       setIsAuthenticated(true);
+      setUserInfo(JSON.parse(localStorage.getItem('user_info') || '{}'));
     }
 
     // Load custom theme
@@ -38,12 +40,18 @@ export default function App() {
 
   const handleLoginSuccess = () => {
     setIsAuthenticated(true);
+    setUserInfo(JSON.parse(localStorage.getItem('user_info') || '{}'));
   };
 
   const handleLogout = () => {
     localStorage.removeItem('jwt_token');
     localStorage.removeItem('user_info');
     setIsAuthenticated(false);
+    setUserInfo({});
+  };
+
+  const handleProfileUpdate = () => {
+    setUserInfo(JSON.parse(localStorage.getItem('user_info') || '{}'));
   };
 
   return (
@@ -51,7 +59,7 @@ export default function App() {
       <div className="app-container">
         {isAuthenticated ? (
           <>
-            <Sidebar onLogout={handleLogout} />
+            <Sidebar onLogout={handleLogout} userInfo={userInfo} />
             <div className="main-content">
               <Topbar theme={theme} toggleTheme={toggleTheme} />
               <main className="content-area">
@@ -61,7 +69,7 @@ export default function App() {
                   <Route path="/budget" element={<BudgetPlanner />} />
                   <Route path="/reports" element={<Reports />} />
                   <Route path="/insights" element={<Insights />} />
-                  <Route path="/profile" element={<Profile onLogout={handleLogout} />} />
+                  <Route path="/profile" element={<Profile onLogout={handleLogout} onProfileUpdate={handleProfileUpdate} />} />
                   <Route path="/" element={<Navigate to="/dashboard" replace />} />
                   <Route path="/login" element={<Navigate to="/dashboard" replace />} />
                   <Route path="/register" element={<Navigate to="/dashboard" replace />} />

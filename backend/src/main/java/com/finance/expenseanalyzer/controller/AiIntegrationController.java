@@ -47,4 +47,9 @@ public class AiIntegrationController {
     public ResponseEntity<RiskScoreResponse> getRiskScore() {
         return ResponseEntity.ok(aiIntegrationService.getRiskScore());
     }
+
+    @GetMapping("/health")
+    public ResponseEntity<Map<String, Object>> getAiHealth() {
+        return ResponseEntity.ok(aiIntegrationService.getAiHealth());
+    }
 }

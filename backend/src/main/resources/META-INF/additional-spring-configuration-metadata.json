@@ -1,0 +1,19 @@
+{
+  "properties": [
+    {
+      "name": "app.jwtSecret",
+      "type": "java.lang.String",
+      "description": "JWT Secret Key used for signing tokens."
+    },
+    {
+      "name": "app.jwtExpirationMs",
+      "type": "java.lang.Long",
+      "description": "Expiration duration in milliseconds for generated JWT tokens."
+    },
+    {
+      "name": "app.aiServiceUrl",
+      "type": "java.lang.String",
+      "description": "Endpoint URL of the FastAPI model prediction service."
+    }
+  ]
+}

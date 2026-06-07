@@ -51,8 +51,8 @@
 
 .glass-navbar {
   background: rgba(3, 7, 18, 0.7);
-  backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
 }
 
 .logo-container {
@@ -168,6 +168,7 @@
 .hero-headline span {
   background: linear-gradient(135deg, #a5b4fc 0%, #6366f1 50%, #8b5cf6 100%);
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
@@ -231,6 +232,7 @@
   margin-top: 0.5rem;
   background: linear-gradient(135deg, #ffffff 0%, #d1d5db 100%);
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 

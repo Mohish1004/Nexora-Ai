@@ -1,0 +1,20 @@
+warning: in the working copy of '.gitignore', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package-lock.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/api/client.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/index.css', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'vite.config.js', LF will be replaced by CRLF the next time Git touches it
+.gitignore
+package-lock.json
+package.json
+src/App.jsx
+src/api/client.js
+src/index.css
+src/pages/BudgetPlanner.jsx
+src/pages/Dashboard.jsx
+src/pages/Expenses.jsx
+src/pages/Insights.css
+src/pages/Insights.jsx
+src/pages/Login.jsx
+src/pages/Reports.jsx
+vite.config.js

@@ -12,9 +12,9 @@ import {
 } from 'lucide-react';
 import './Sidebar.css';
 
-export default function Sidebar({ onLogout }) {
+export default function Sidebar({ onLogout, userInfo }) {
   const navigate = useNavigate();
-  const userInfo = JSON.parse(localStorage.getItem('user_info') || '{}');
+  const displayUser = userInfo || JSON.parse(localStorage.getItem('user_info') || '{}');
 
   const navItems = [
     { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -39,11 +39,11 @@ export default function Sidebar({ onLogout }) {
 
       <div className="sidebar-user">
         <div className="user-avatar">
-          {userInfo?.name ? userInfo.name.charAt(0).toUpperCase() : 'U'}
+          {displayUser?.name ? displayUser.name.charAt(0).toUpperCase() : 'U'}
         </div>
         <div className="user-details">
-          <h4>{userInfo?.name || 'Demo Investor'}</h4>
-          <span className="user-email">{userInfo?.email || 'demo@finance.ai'}</span>
+          <h4>{displayUser?.name || 'Demo Investor'}</h4>
+          <span className="user-email">{displayUser?.email || 'demo@finance.ai'}</span>
         </div>
       </div>
 

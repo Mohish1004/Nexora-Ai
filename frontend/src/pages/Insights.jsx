@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
-import { aiApi, aiWs, expenseApi } from '../api/client';
+import { aiApi, aiWs, expenseApi, incomeApi } from '../api/client';
 import { 
   Sparkles, 
   Brain, 
@@ -43,18 +43,40 @@ export default function Insights() {
     try {
       setLoading(true);
       setError('');
-      const [insRes, predRes, anoRes, segRes, riskRes] = await Promise.all([
-        aiApi.getInsights(),
-        aiApi.getPredictions(),
-        aiApi.getAnomalies(),
-        aiApi.getSegment(),
-        aiApi.getRiskScore(),
+      
+      const [expRes, incRes] = await Promise.all([
+        expenseApi.getAll(),
+        incomeApi.getAll()
       ]);
-      setInsights(insRes.data);
-      setPredictions(predRes.data);
-      setAnomalies(anoRes.data);
-      setSegment(segRes.data);
-      setRiskScore(riskRes.data);
+      const expenses = expRes.data || [];
+      const incomes = incRes.data || [];
+      const totalIncome = incomes.reduce((acc, curr) => acc + (curr.amount || 0), 0);
+
+      if (wsConnected) {
+        // Trigger live WebSocket ML ensemble analysis
+        aiWs.analyze(expenses, totalIncome);
+        // Load segment/clusters asynchronously via REST (not streamed over websocket)
+        try {
+          const segRes = await aiApi.getSegment();
+          setSegment(segRes.data);
+        } catch (e) {
+          console.error("Failed to load clusters:", e);
+        }
+      } else {
+        // REST Fallback mode (downtime or connection retry phase)
+        const [insRes, predRes, anoRes, segRes, riskRes] = await Promise.all([
+          aiApi.getInsights(),
+          aiApi.getPredictions(),
+          aiApi.getAnomalies(),
+          aiApi.getSegment(),
+          aiApi.getRiskScore(),
+        ]);
+        setInsights(insRes.data);
+        setPredictions(predRes.data);
+        setAnomalies(anoRes.data);
+        setSegment(segRes.data);
+        setRiskScore(riskRes.data);
+      }
     } catch (err) {
       console.error('Remote AI link error:', err);
       setError('AI Subsystem is offline or unreachable. Please make sure the FastAPI server is running.');
@@ -66,7 +88,7 @@ export default function Insights() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [wsConnected]);
 
   useEffect(() => {
     fetchAll();

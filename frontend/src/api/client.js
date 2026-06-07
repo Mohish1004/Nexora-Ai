@@ -38,6 +38,7 @@ apiClient.interceptors.response.use(
 export const authApi = {
   login: (data) => apiClient.post('/auth/login', data),
   register: (data) => apiClient.post('/auth/register', data),
+  updateProfile: (data) => apiClient.put('/auth/profile', data),
 };
 
 export const expenseApi = {
@@ -72,6 +73,7 @@ export const aiApi = {
   getAnomalies: () => apiClient.get('/ai/anomalies'),
   getSegment: () => apiClient.get('/ai/segment'),
   getRiskScore: () => apiClient.get('/ai/risk-score'),
+  getHealth: () => apiClient.get('/ai/health'),
 };
 
 // WebSocket client for real-time AI streaming
