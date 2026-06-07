@@ -6,19 +6,21 @@ import './BudgetPlanner.css';
 export default function BudgetPlanner() {
   const [budgets, setBudgets] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
   
   // Custom Month Input
-  const [selectedMonth, setSelectedMonth] = useState('2026-05');
+  const [selectedMonth, setSelectedMonth] = useState('2026-06');
   const [monthlyLimit, setMonthlyLimit] = useState('');
   const [activeBudget, setActiveBudget] = useState(null);
   
   // Comparison metrics
-  const [totalExpenseForMonth, setTotalExpenseForMonth] = useState(32200);
+  const [totalExpenseForMonth, setTotalExpenseForMonth] = useState(0);
   const [savedStatus, setSavedStatus] = useState(false);
 
   const fetchBudgetContext = async (monthStr) => {
     try {
       setLoading(true);
+      setError('');
       const [bListRes, bCurrRes, cRes] = await Promise.all([
         budgetApi.getAll(),
         budgetApi.getForMonth(monthStr),
@@ -31,18 +33,18 @@ export default function BudgetPlanner() {
       if (active?.monthlyLimit) {
         setMonthlyLimit(active.monthlyLimit);
       } else {
-        setMonthlyLimit(50000); // defaults
+        setMonthlyLimit(0); // defaults
       }
 
       // calculate current spend
       const cats = cRes.data || [];
       const spent = cats.reduce((acc, curr) => acc + (curr.amount || 0), 0);
-      setTotalExpenseForMonth(spent > 0 ? spent : 32200);
+      setTotalExpenseForMonth(spent);
     } catch (err) {
       console.error('Failed budget loading context:', err);
-      // Fallback preset demo parameters
-      setMonthlyLimit(50000);
-      setTotalExpenseForMonth(32200);
+      setError('Failed to fetch budget boundaries from server.');
+      setMonthlyLimit(0);
+      setTotalExpenseForMonth(0);
     } finally {
       setLoading(false);
     }
@@ -55,6 +57,7 @@ export default function BudgetPlanner() {
   const handleSaveBudget = async (e) => {
     e.preventDefault();
     if (!monthlyLimit) return;
+    setError('');
 
     try {
       await budgetApi.setBudget({
@@ -65,14 +68,11 @@ export default function BudgetPlanner() {
       setTimeout(() => setSavedStatus(false), 3000);
       fetchBudgetContext(selectedMonth);
     } catch (err) {
-      // client update simulation
-      setActiveBudget({ month: selectedMonth, monthlyLimit: parseFloat(monthlyLimit) });
-      setSavedStatus(true);
-      setTimeout(() => setSavedStatus(false), 3000);
+      setError('Failed to persist budget parameters: ' + (err.response?.data?.message || err.message));
     }
   };
 
-  const limitNum = parseFloat(monthlyLimit) || 50000;
+  const limitNum = parseFloat(monthlyLimit) || 0;
   const percentageSpent = limitNum > 0 ? Math.round((totalExpenseForMonth / limitNum) * 100) : 0;
   const remaining = limitNum - totalExpenseForMonth;
 
@@ -83,6 +83,7 @@ export default function BudgetPlanner() {
 
   return (
     <div className="budget-planner-page fade-in">
+      {error && <div className="alert alert-danger mb-4 p-3 rounded bg-danger-bg text-danger border border-danger/20 text-xs font-semibold">{error}</div>}
       <div className="budget-grid">
         {/* Left Control Card */}
         <div className="glass-panel edit-budget-card">
@@ -219,11 +220,7 @@ export default function BudgetPlanner() {
                   <span>₹{(b.monthlyLimit || 0).toLocaleString()}</span>
                 </button>
               )) : (
-                <>
-                  <div className="p-2 text-center rounded-md border border-color bg-base text-xs font-bold text-primary">2026-05: ₹50,000</div>
-                  <div className="p-2 text-center rounded-md border border-color bg-base text-xs text-muted">2026-04: ₹45,000</div>
-                  <div className="p-2 text-center rounded-md border border-color bg-base text-xs text-muted">2026-03: ₹42,000</div>
-                </>
+                <div className="col-span-3 text-muted text-xs text-center py-3 bg-base/50 rounded border border-color">No budget directives configured.</div>
               )}
             </div>
           </div>

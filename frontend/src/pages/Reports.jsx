@@ -19,6 +19,7 @@ import './Reports.css';
 
 export default function Reports() {
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
   const [monthlyData, setMonthlyData] = useState([]);
   const [categoryData, setCategoryData] = useState([]);
   const [incomeList, setIncomeList] = useState([]);
@@ -30,6 +31,7 @@ export default function Reports() {
   const fetchReportsData = async (monthStr = '') => {
     try {
       setLoading(true);
+      setError('');
       const [mRes, cRes, iRes] = await Promise.all([
         analyticsApi.getMonthly(12), // full year
         analyticsApi.getCategory(monthStr),
@@ -41,15 +43,8 @@ export default function Reports() {
       setIncomeList(iRes.data || []);
     } catch (err) {
       console.error('Error fetching analytical arrays:', err);
-      // Fallback arrays
-      setCategoryData([
-        { category: 'Food', amount: 6600, percentage: 20.5 },
-        { category: 'Shopping', amount: 15000, percentage: 46.5 },
-        { category: 'Transport', amount: 4300, percentage: 13.3 },
-        { category: 'Bills', amount: 3200, percentage: 9.9 },
-        { category: 'Education', amount: 5000, percentage: 15.5 },
-        { category: 'Entertainment', amount: 3500, percentage: 10.8 }
-      ]);
+      setCategoryData([]);
+      setError('Analytical server query failed. Data could not be loaded.');
     } finally {
       setLoading(false);
     }
@@ -107,6 +102,7 @@ export default function Reports() {
 
   return (
     <div className="reports-page fade-in">
+      {error && <div className="alert alert-danger mb-4 p-3 rounded bg-danger-bg text-danger border border-danger/20 text-xs font-semibold">{error}</div>}
       {/* Top Filter and Tab Central */}
       <div className="reports-nav glass-panel mb-6">
         <div className="flex items-center gap-2">
@@ -226,23 +222,9 @@ export default function Reports() {
                       <td className="py-3 text-right font-bold text-success">+₹{inc.amount.toLocaleString()}</td>
                     </tr>
                   )) : (
-                    <>
-                      <tr className="border-b border-color">
-                        <td className="py-3 font-semibold">Primary Tech Salary</td>
-                        <td className="py-3 text-muted">2026-05-01</td>
-                        <td className="py-3 text-right font-bold text-success">+₹85,000</td>
-                      </tr>
-                      <tr className="border-b border-color">
-                        <td className="py-3 font-semibold">Freelance Consulting</td>
-                        <td className="py-3 text-muted">2026-05-04</td>
-                        <td className="py-3 text-right font-bold text-success">+₹15,000</td>
-                      </tr>
-                      <tr className="border-b border-color">
-                        <td className="py-3 font-semibold">Stock Dividend</td>
-                        <td className="py-3 text-muted">2026-04-18</td>
-                        <td className="py-3 text-right font-bold text-success">+₹3,500</td>
-                      </tr>
-                    </>
+                    <tr>
+                      <td colSpan="3" className="py-8 text-center text-muted">No income streams logged yet.</td>
+                    </tr>
                   )}
                 </tbody>
               </table>

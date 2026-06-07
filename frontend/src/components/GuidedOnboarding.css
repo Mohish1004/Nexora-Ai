@@ -1,0 +1,43 @@
+/* CentricAI Guided Onboarding UI Styles */
+
+.onboarding-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(3, 7, 18, 0.85); /* Darkened premium shade */
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  z-index: 2000;
+  padding: 1.5rem;
+}
+
+.onboarding-card {
+  max-width: 460px;
+  width: 100%;
+  padding: 2.5rem;
+  background: hsl(var(--bg-surface));
+  border: 1px solid hsl(var(--border-color));
+}
+
+.step-icon-circle {
+  width: 4rem;
+  height: 4rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+}
+
+.step-icon-circle.accent { background: rgba(99, 102, 241, 0.15); color: #818cf8; }
+.step-icon-circle.warning { background: rgba(245, 158, 11, 0.15); color: #fbbf24; }
+.step-icon-circle.primary { background: rgba(139, 92, 246, 0.15); color: #a78bfa; }
+.step-icon-circle.success { background: rgba(16, 185, 129, 0.15); color: #34d399; }
+
+.onboarding-error {
+  background: hsl(var(--danger-bg));
+  color: hsl(var(--danger));
+  padding: 0.75rem;
+  border-radius: var(--radius-md);
+  font-size: 0.8rem;
+  font-weight: 600;
+  border: 1px solid rgba(244, 63, 94, 0.2);
+}

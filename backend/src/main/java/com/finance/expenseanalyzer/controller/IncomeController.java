@@ -3,6 +3,7 @@ package com.finance.expenseanalyzer.controller;
 import com.finance.expenseanalyzer.dto.IncomeDto;
 import com.finance.expenseanalyzer.dto.MessageResponse;
 import com.finance.expenseanalyzer.service.IncomeService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -23,7 +24,7 @@ public class IncomeController {
     }
 
     @PostMapping
-    public ResponseEntity<IncomeDto> createIncome(@RequestBody IncomeDto incomeDto) {
+    public ResponseEntity<IncomeDto> createIncome(@Valid @RequestBody IncomeDto incomeDto) {
         return ResponseEntity.ok(incomeService.createIncome(incomeDto));
     }
 

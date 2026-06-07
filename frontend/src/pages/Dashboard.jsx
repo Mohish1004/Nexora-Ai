@@ -15,6 +15,7 @@ import {
 import { Line, Bar, Pie } from 'react-chartjs-2';
 import { analyticsApi, expenseApi, incomeApi, budgetApi } from '../api/client';
 import { Wallet, TrendingUp, TrendingDown, Target, AlertTriangle, ArrowUpRight } from 'lucide-react';
+import GuidedOnboarding from '../components/GuidedOnboarding';
 import './Dashboard.css';
 
 // Register Chart.js components
@@ -56,9 +57,9 @@ export default function Dashboard() {
       setRecentExpenses((eRes.data || []).slice(0, 5)); // top 5 recent
 
       if (bRes.data && bRes.data.length > 0) {
-        setBudgetLimit(bRes.data[0].monthlyLimit || 50000);
+        setBudgetLimit(bRes.data[0].monthlyLimit || 0);
       } else {
-        setBudgetLimit(50000);
+        setBudgetLimit(0);
       }
     } catch (err) {
       console.error('Error loading dashboard analytics:', err);
@@ -71,8 +72,10 @@ export default function Dashboard() {
     fetchData();
   }, []);
 
+  const isOnboardingRequired = !loading && monthlyData.length === 0 && recentExpenses.length === 0;
+
   // Compute immediate month totals
-  const currentMonthMetric = monthlyData[monthlyData.length - 1] || { totalIncome: 103500, totalExpense: 32200, month: '2026-05' };
+  const currentMonthMetric = monthlyData[monthlyData.length - 1] || { totalIncome: 0, totalExpense: 0, month: 'No Data' };
   const totalInc = currentMonthMetric.totalIncome || 0;
   const totalExp = currentMonthMetric.totalExpense || 0;
   const balance = totalInc - totalExp;
@@ -164,6 +167,8 @@ export default function Dashboard() {
 
   return (
     <div className="dashboard-container fade-in">
+      {isOnboardingRequired && <GuidedOnboarding onComplete={fetchData} />}
+
       {/* Top Value Blocks */}
       <div className="grid-kpis">
         <div className="kpi-card glass-panel">
@@ -175,7 +180,7 @@ export default function Dashboard() {
             <h3>₹{balance.toLocaleString()}</h3>
             <div className="kpi-indicator success">
               <TrendingUp size={14} />
-              <span>Healthy surplus</span>
+              <span>{balance > 0 ? 'Healthy surplus' : 'No balance accumulated'}</span>
             </div>
           </div>
         </div>
@@ -200,7 +205,7 @@ export default function Dashboard() {
             <h3>₹{totalExp.toLocaleString()}</h3>
             <div className="kpi-indicator danger">
               <TrendingDown size={14} />
-              <span>{budgetSpentPct}% of budget</span>
+              <span>{budgetLimit > 0 ? `${budgetSpentPct}% of budget` : 'No budget set'}</span>
             </div>
           </div>
         </div>
@@ -212,12 +217,12 @@ export default function Dashboard() {
           <div className="kpi-info">
             <span>Active Budget Limit</span>
             <h3>₹{budgetLimit.toLocaleString()}</h3>
-            {budgetSpentPct > 85 ? (
+            {budgetLimit > 0 && budgetSpentPct > 85 ? (
               <span className="text-xs text-danger flex items-center gap-1 mt-1">
                 <AlertTriangle size={12} /> Limit Critical Warning!
               </span>
             ) : (
-              <span className="text-xs text-success">Safe operation trajectory</span>
+              <span className="text-xs text-success">{budgetLimit > 0 ? 'Safe operation trajectory' : 'No budget configured'}</span>
             )}
           </div>
         </div>
@@ -235,7 +240,11 @@ export default function Dashboard() {
             <span className="badge badge-entertainment">Line Series</span>
           </div>
           <div className="chart-container" style={{ height: '320px' }}>
-            <Line data={lineChartData} options={chartOptions} />
+            {monthlyData.length > 0 ? (
+              <Line data={lineChartData} options={chartOptions} />
+            ) : (
+              <div className="h-full flex items-center justify-center text-muted text-sm">No multi-month flow history logged.</div>
+            )}
           </div>
         </div>
 
@@ -249,7 +258,11 @@ export default function Dashboard() {
             <span className="badge badge-shopping">Pie View</span>
           </div>
           <div className="chart-container" style={{ height: '320px' }}>
-            <Pie data={pieChartData} options={pieOptions} />
+            {categoryData.length > 0 ? (
+              <Pie data={pieChartData} options={pieOptions} />
+            ) : (
+              <div className="h-full flex items-center justify-center text-muted text-sm">No categorical divisions recorded.</div>
+            )}
           </div>
         </div>
       </div>
@@ -266,7 +279,11 @@ export default function Dashboard() {
             <span className="badge badge-transport">Bar Graph</span>
           </div>
           <div className="chart-container" style={{ height: '280px' }}>
-            <Bar data={barChartData} options={{...chartOptions, plugins: { legend: { display: false } }}} />
+            {categoryData.length > 0 ? (
+              <Bar data={barChartData} options={{...chartOptions, plugins: { legend: { display: false } }}} />
+            ) : (
+              <div className="h-full flex items-center justify-center text-muted text-sm">No category totals calculated.</div>
+            )}
           </div>
         </div>
 
@@ -284,12 +301,12 @@ export default function Dashboard() {
             <div className="savings-meter mt-4">
               <div className="meter-header flex justify-between mb-1">
                 <span className="font-semibold text-sm">Savings Cushion Target (20%)</span>
-                <span className="font-bold text-primary">{savingsData?.savingsRate || 22.4}% Saved</span>
+                <span className="font-bold text-primary">{savingsData?.savingsRate || 0}% Saved</span>
               </div>
               <div className="meter-track">
                 <div 
                   className="meter-fill" 
-                  style={{ width: `${Math.min(savingsData?.savingsRate || 22.4, 100)}%` }}
+                  style={{ width: `${Math.min(savingsData?.savingsRate || 0, 100)}%` }}
                 ></div>
               </div>
             </div>
@@ -297,7 +314,7 @@ export default function Dashboard() {
             <div className="recommendation-card mt-6">
               <h4>System Recommendations</h4>
               <p className="text-sm mt-2 leading-relaxed">
-                {savingsData?.recommendation || 'Excellent! You have a highly healthy savings cushion this period. Keep maintaining this consistency.'}
+                {savingsData?.recommendation || 'No active advisory recommendations. Log income and transactions to receive automated analysis alerts.'}
               </p>
             </div>
           </div>
@@ -305,15 +322,19 @@ export default function Dashboard() {
           <div className="recent-mini-list mt-6 pt-4 border-t border-color">
             <h4 className="text-xs text-muted uppercase mb-3">Recent Realtime Transactions</h4>
             <div className="flex flex-col gap-2">
-              {recentExpenses.map((ex) => (
-                <div key={ex.id} className="flex justify-between items-center text-xs">
-                  <span className="font-medium truncate max-w-[180px]">{ex.description || ex.category}</span>
-                  <div className="flex items-center gap-2">
-                    <span className={`badge badge-${ex.category.toLowerCase()}`}>{ex.category}</span>
-                    <span className="font-semibold text-danger">-₹{ex.amount}</span>
+              {recentExpenses.length > 0 ? (
+                recentExpenses.map((ex) => (
+                  <div key={ex.id} className="flex justify-between items-center text-xs">
+                    <span className="font-medium truncate max-w-[180px]">{ex.description || ex.category}</span>
+                    <div className="flex items-center gap-2">
+                      <span className={`badge badge-${ex.category.toLowerCase()}`}>{ex.category}</span>
+                      <span className="font-semibold text-danger">-₹{ex.amount}</span>
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))
+              ) : (
+                <div className="text-muted text-xs text-center py-2">No transactions recorded.</div>
+              )}
             </div>
           </div>
         </div>

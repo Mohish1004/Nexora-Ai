@@ -1,10 +1,28 @@
-import React, { useEffect, useState, useCallback } from 'react';
-import { aiApi, aiWs } from '../api/client';
-import { Sparkles, Brain, AlertOctagon, TrendingUp, DollarSign, Award, RefreshCw, Zap, Shield, Activity, PieChart, Wifi, WifiOff } from 'lucide-react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
+import { aiApi, aiWs, expenseApi } from '../api/client';
+import { 
+  Sparkles, 
+  Brain, 
+  AlertOctagon, 
+  TrendingUp, 
+  DollarSign, 
+  Award, 
+  RefreshCw, 
+  Zap, 
+  Shield, 
+  Activity, 
+  PieChart, 
+  Wifi, 
+  WifiOff,
+  Send,
+  User,
+  Bot
+} from 'lucide-react';
 import './Insights.css';
 
 export default function Insights() {
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
   const [insights, setInsights] = useState(null);
   const [predictions, setPredictions] = useState(null);
   const [anomalies, setAnomalies] = useState(null);
@@ -12,11 +30,19 @@ export default function Insights() {
   const [segment, setSegment] = useState(null);
   const [refreshing, setRefreshing] = useState(false);
   const [wsConnected, setWsConnected] = useState(false);
-  const [activeTab, setActiveTab] = useState('insights');
+  const [activeTab, setActiveTab] = useState('chat'); // Default to flagship chatbot tab
+  
+  // Chatbot State
+  const [messages, setMessages] = useState([
+    { id: 1, sender: 'bot', text: 'Hello! I am your CentricAI Financial Advisor. Ask me anything about your current budget performance, spending anomalies, or cashflow predictions.' }
+  ]);
+  const [chatInput, setChatInput] = useState('');
+  const chatEndRef = useRef(null);
 
   const fetchAll = useCallback(async () => {
     try {
       setLoading(true);
+      setError('');
       const [insRes, predRes, anoRes, segRes, riskRes] = await Promise.all([
         aiApi.getInsights(),
         aiApi.getPredictions(),
@@ -30,32 +56,13 @@ export default function Insights() {
       setSegment(segRes.data);
       setRiskScore(riskRes.data);
     } catch (err) {
-      console.error('Remote AI link error, loading embedded engine triggers:', err);
-      setInsights({
-        behaviorAnalysis: [
-          "You spent 35% more on food this month.",
-          "Your shopping expenses increased continuously for 3 weeks.",
-          "Entertainment overhead is slightly higher than standard peer limits."
-        ],
-        savingsSuggestions: [
-          "Potential monthly savings: ₹4500",
-          "Automate 20% of incoming salary deposits directly into mutual funds/savings.",
-          "Consider reducing micro-subscriptions to save an extra ₹1500."
-        ],
-        unusualSpendingAlerts: [
-          "Detected anomalous high-frequency transaction density during non-standard business hours.",
-          "Detected 2 unusual back-to-back transit transactions last weekend."
-        ],
-        potentialSavings: 4500.0
-      });
-      setPredictions({
-        predictedNextMonthExpense: 33800.0,
-        forecastedSavings: 7436.0,
-        trendSummary: "Based on multi-variate linear regression modeling of past monthly seasonality vectors, aggregate spending is predicted to follow a mild upward trajectory due to standard inflation parameters. Recommended automated index routing."
-      });
-      setAnomalies({ anomalies: [], riskScore: 12.5, summary: "Fallback: no anomalies detected. Risk: 12.5%." });
-      setSegment({ segments: [], pattern: "Balanced Spender", summary: "Balanced Spender: spending spread across 3 main categories." });
-      setRiskScore({ overallRisk: 15.0, transactionRisks: [], recommendations: ["Spending patterns within normal risk parameters."] });
+      console.error('Remote AI link error:', err);
+      setError('AI Subsystem is offline or unreachable. Please make sure the FastAPI server is running.');
+      setInsights(null);
+      setPredictions(null);
+      setAnomalies(null);
+      setSegment(null);
+      setRiskScore(null);
     } finally {
       setLoading(false);
     }
@@ -65,7 +72,7 @@ export default function Insights() {
     fetchAll();
   }, [fetchAll]);
 
-  // WebSocket real-time connection
+  // WebSocket connection
   useEffect(() => {
     aiWs.on('connected', (connected) => setWsConnected(connected));
     aiWs.on('analysis_complete', (payload) => {
@@ -78,20 +85,77 @@ export default function Insights() {
     return () => aiWs.disconnect();
   }, []);
 
-  const handleManualRebuild = () => {
+  // Auto scroll chat
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
+
+  const handleManualRebuild = async () => {
     setRefreshing(true);
-    setTimeout(() => {
+    setError('');
+    try {
+      await fetchAll();
+    } catch (err) {
+      setError('Recalculation failed: ' + err.message);
+    } finally {
       setRefreshing(false);
-      if (insights) {
-        setInsights({
-          ...insights,
-          potentialSavings: roundNum(insights.potentialSavings + 150)
-        });
-      }
-    }, 1200);
+    }
   };
 
-  const roundNum = (n) => Math.round(n * 100) / 100;
+  // Chat reply generation logic based on actual fetched database state
+  const handleSendMessage = (e) => {
+    e.preventDefault();
+    if (!chatInput.trim()) return;
+
+    const userText = chatInput.trim();
+    const newMsg = { id: Date.now(), sender: 'user', text: userText };
+    setMessages(prev => [...prev, newMsg]);
+    setChatInput('');
+
+    // Simulate thinking delay
+    setTimeout(() => {
+      let reply = '';
+      const query = userText.toLowerCase();
+
+      if (!insights && !predictions) {
+        reply = "I don't have access to your financial metrics right now because the AI service is offline. Please resolve the server connections.";
+      } else if (query.includes('savings') || query.includes('optimize') || query.includes('cut')) {
+        const potential = insights?.potentialSavings || 0;
+        const suggestions = insights?.savingsSuggestions || [];
+        reply = `According to our RandomForest optimization loops, your potential savings cushion is ₹${potential.toLocaleString()} this period. `;
+        if (suggestions.length > 0) {
+          reply += `Here is what I suggest: ${suggestions.join(' ')}`;
+        } else {
+          reply += `Log more expenses to allow me to extract custom savings routes.`;
+        }
+      } else if (query.includes('forecast') || query.includes('predict') || query.includes('future') || query.includes('next month')) {
+        const nextMonth = predictions?.predictedNextMonthExpense || 0;
+        const trend = predictions?.trendSummary || '';
+        reply = `I forecast your aggregate spending for next month will be approximately ₹${nextMonth.toLocaleString()}. ${trend}`;
+      } else if (query.includes('anomaly') || query.includes('risk') || query.includes('suspicious') || query.includes('unsafe')) {
+        const risk = anomalies?.riskScore || riskScore?.overallRisk || 0;
+        const flagList = anomalies?.anomalies || [];
+        reply = `Your overall portfolio risk profile is calculated at ${risk}%. `;
+        if (flagList.length > 0) {
+          reply += `We flagged ${flagList.length} anomalies: ${flagList.map(a => `₹${a.amount} under ${a.category} (${a.reason})`).join(', ')}.`;
+        } else {
+          reply += `No suspicious transaction z-score variances were flagged. All items run within standard bounds.`;
+        }
+      } else if (query.includes('categories') || query.includes('spending') || query.includes('patterns') || query.includes('group')) {
+        const pattern = segment?.pattern || 'Balanced Spender';
+        const sumText = segment?.summary || '';
+        reply = `Your spending behavior conforms to the "${pattern}" template. ${sumText}`;
+      } else {
+        reply = `I parsed your question. Based on your active portfolio, your current month expenses are under analysis. Your calculated potential savings is ₹${(insights?.potentialSavings || 0).toLocaleString()} and your forecast next month cost is ₹${(predictions?.predictedNextMonthExpense || 0).toLocaleString()}. Feel free to ask about "savings", "forecasting", "anomalies", or "spending patterns"!`;
+      }
+
+      setMessages(prev => [...prev, {
+        id: Date.now() + 1,
+        sender: 'bot',
+        text: reply
+      }]);
+    }, 800);
+  };
 
   const riskColor = (score) => {
     if (score < 25) return 'text-success';
@@ -107,13 +171,15 @@ export default function Insights() {
 
   return (
     <div className="insights-page fade-in">
+      {error && <div className="alert alert-danger mb-4 p-3 rounded bg-danger-bg text-danger border border-danger/20 text-xs font-semibold">{error}</div>}
+
       {/* Top Banner Feature */}
       <div className="ai-premium-banner glass-panel mb-6">
         <div className="banner-bg-glow"></div>
         <div className="banner-content">
           <div className="flex items-center gap-3">
             <div className="p-3 bg-white text-accent rounded-md shadow-md">
-              <Brain size={28} />
+              <Brain size={28} className="text-primary-hover" />
             </div>
             <div>
               <div className="flex items-center gap-2">
@@ -137,7 +203,7 @@ export default function Insights() {
             )}
             <button
               onClick={handleManualRebuild}
-              disabled={refreshing}
+              disabled={refreshing || loading}
               className="btn btn-secondary text-xs flex items-center gap-1"
             >
               <RefreshCw size={14} className={refreshing ? 'spin' : ''} />
@@ -149,8 +215,11 @@ export default function Insights() {
 
       {/* Tab Navigation */}
       <div className="tab-bar glass-panel mb-6">
+        <button className={`tab-btn ${activeTab === 'chat' ? 'active' : ''}`} onClick={() => setActiveTab('chat')}>
+          <Bot size={16} /> AI Financial Advisor Chat
+        </button>
         <button className={`tab-btn ${activeTab === 'insights' ? 'active' : ''}`} onClick={() => setActiveTab('insights')}>
-          <Sparkles size={16} /> Insights
+          <Sparkles size={16} /> Performance Insights
         </button>
         <button className={`tab-btn ${activeTab === 'security' ? 'active' : ''}`} onClick={() => setActiveTab('security')}>
           <Shield size={16} /> Security & Risk
@@ -169,6 +238,51 @@ export default function Insights() {
         </div>
       ) : (
         <>
+          {/* Flagship Tab: AI Advisor Chat */}
+          {activeTab === 'chat' && (
+            <div className="chat-container-panel glass-panel flex flex-col justify-between">
+              <div className="chat-header p-4 border-b border-color flex justify-between items-center bg-base/30">
+                <div className="flex items-center gap-2">
+                  <Bot size={20} className="text-primary" />
+                  <div>
+                    <h3 className="text-sm font-bold">Interactive Advisor</h3>
+                    <span className="text-[10px] text-success font-semibold flex items-center gap-0.5">● Dynamic context loaded</span>
+                  </div>
+                </div>
+                <span className="text-[10px] text-muted">Answers derived from your active database variables</span>
+              </div>
+
+              <div className="chat-messages p-4 space-y-4 overflow-y-auto" style={{ height: '380px' }}>
+                {messages.map((m) => (
+                  <div key={m.id} className={`chat-bubble-wrapper flex ${m.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
+                    <div className={`flex items-start gap-2 max-w-[80%] ${m.sender === 'user' ? 'flex-row-reverse' : ''}`}>
+                      <div className={`p-2 rounded-full ${m.sender === 'user' ? 'bg-primary text-white' : 'bg-base border border-color'}`}>
+                        {m.sender === 'user' ? <User size={14} /> : <Bot size={14} />}
+                      </div>
+                      <div className={`chat-bubble p-3 rounded-lg text-xs leading-relaxed ${m.sender === 'user' ? 'bg-primary text-white rounded-tr-none' : 'bg-base border border-color rounded-tl-none'}`}>
+                        {m.text}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+                <div ref={chatEndRef} />
+              </div>
+
+              <form onSubmit={handleSendMessage} className="chat-input-area p-3 border-t border-color flex gap-2 bg-base/20">
+                <input 
+                  type="text" 
+                  className="form-input text-xs" 
+                  value={chatInput} 
+                  onChange={(e) => setChatInput(e.target.value)} 
+                  placeholder="Ask advisor: e.g. How can I optimize spending? / What is my forecast?" 
+                />
+                <button type="submit" className="btn btn-primary px-4 py-2">
+                  <Send size={14} />
+                </button>
+              </form>
+            </div>
+          )}
+
           {/* Tab: Insights */}
           {activeTab === 'insights' && (
             <div className="insights-grid">
@@ -206,7 +320,7 @@ export default function Insights() {
                     </div>
                     <div className="text-right">
                       <span className="text-2xl font-bold text-success">
-                        ₹{(insights?.potentialSavings || 4500).toLocaleString()}
+                        ₹{(insights?.potentialSavings || 0).toLocaleString()}
                       </span>
                     </div>
                   </div>
@@ -273,13 +387,13 @@ export default function Insights() {
                       <div className="p-4 bg-base rounded-md border border-color text-center">
                         <span className="text-xs text-muted uppercase block font-semibold">Predicted Core Cost</span>
                         <span className="text-xl font-bold text-accent mt-1 block">
-                          ₹{(predictions?.predictedNextMonthExpense || 33800).toLocaleString()}
+                          ₹{(predictions?.predictedNextMonthExpense || 0).toLocaleString()}
                         </span>
                       </div>
                       <div className="p-4 bg-base rounded-md border border-color text-center">
                         <span className="text-xs text-muted uppercase block font-semibold">Forecasted Safe Savings</span>
                         <span className="text-xl font-bold text-success mt-1 block">
-                          ₹{(predictions?.forecastedSavings || 7436).toLocaleString()}
+                          ₹{(predictions?.forecastedSavings || 0).toLocaleString()}
                         </span>
                       </div>
                     </div>
@@ -502,13 +616,13 @@ export default function Insights() {
                     <div className="p-4 bg-base rounded-md border border-color text-center">
                       <span className="text-xs text-muted uppercase block font-semibold">Next Month</span>
                       <span className="text-xl font-bold text-accent mt-1 block">
-                        ₹{(predictions?.predictedNextMonthExpense || 33800).toLocaleString()}
+                        ₹{(predictions?.predictedNextMonthExpense || 0).toLocaleString()}
                       </span>
                     </div>
                     <div className="p-4 bg-base rounded-md border border-color text-center">
                       <span className="text-xs text-muted uppercase block font-semibold">Forecasted Savings</span>
                       <span className="text-xl font-bold text-success mt-1 block">
-                        ₹{(predictions?.forecastedSavings || 7436).toLocaleString()}
+                        ₹{(predictions?.forecastedSavings || 0).toLocaleString()}
                       </span>
                     </div>
                   </div>

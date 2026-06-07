@@ -1,5 +1,6 @@
 import asyncio
 import base64
+import hashlib
 import io
 import json
 import re
@@ -139,11 +140,25 @@ def _compute_category_stats(expenses: List[Dict[str, Any]]) -> Dict[str, Any]:
 
 
 # ---------------------------------------------------------------------------
-# Model training
-# ---------------------------------------------------------------------------
+def _get_expenses_hash(expenses: List[Dict[str, Any]]) -> str:
+    # Serialize selected fields to hash the dataset state
+    clean_data = [
+        {"category": e.get("category"), "amount": float(e.get("amount", 0)), "date": e.get("date")}
+        for e in expenses if e
+    ]
+    serialized = json.dumps(clean_data, sort_keys=True)
+    return hashlib.md5(serialized.encode("utf-8")).hexdigest()
+
 
 def _train_models(expenses: List[Dict[str, Any]]) -> None:
     global _model_cache
+    if not expenses:
+        return
+
+    current_hash = _get_expenses_hash(expenses)
+    if _model_cache.get("data_hash") == current_hash and _model_cache.get("predictor") is not None:
+        return
+
     features = _extract_features(expenses)
     if features.shape[0] < 5:
         return
@@ -174,6 +189,7 @@ def _train_models(expenses: List[Dict[str, Any]]) -> None:
         _model_cache["segmenter"] = km
 
     _model_cache["last_trained"] = datetime.utcnow().isoformat()
+    _model_cache["data_hash"] = current_hash
 
 
 # ---------------------------------------------------------------------------
@@ -492,7 +508,7 @@ def _perform_ocr(image_bytes: bytes, file_name: Optional[str] = None) -> Dict[st
     confidence = max(cat_scores.values()) / max(len(v) for v in cat_map.values()) if cat_scores else 0.0
 
     return {
-        "amount": round(amount, 2) if amount else round(np.random.uniform(250, 4800), 2),
+        "amount": round(amount, 2) if amount else 0.0,
         "date": date,
         "category": category,
         "extractedText": extracted_text.strip() or "--- OCR TEXT EXTRACTION ---\nNO TEXT DETECTED",

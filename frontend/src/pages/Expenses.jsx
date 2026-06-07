@@ -20,23 +20,20 @@ export default function Expenses() {
   const [ocrLoading, setOcrLoading] = useState(false);
   const [ocrResult, setOcrResult] = useState(null);
   const [selectedImage, setSelectedImage] = useState(null);
+  const [error, setError] = useState('');
 
   const categories = ['Food', "Transport", "Shopping", "Bills", "Education", "Entertainment"];
 
   const fetchExpenses = async () => {
     try {
       setLoading(true);
+      setError('');
       const res = await expenseApi.getAll();
       setExpenses(res.data || []);
     } catch (err) {
       console.error('Failed fetching expenses:', err);
-      // fallback mock items if API isn't up
-      setExpenses([
-        { id: 101, category: 'Food', amount: 4500, description: 'Gourmet Bistro Dinner', date: '2026-05-12' },
-        { id: 102, category: 'Shopping', amount: 8900, description: 'Ergonomic Work Chair', date: '2026-05-10' },
-        { id: 103, category: 'Transport', amount: 1800, description: 'Monthly Premium Cab Pass', date: '2026-05-07' },
-        { id: 104, category: 'Bills', amount: 3200, description: 'High speed fiber internet plan', date: '2026-05-02' }
-      ]);
+      setExpenses([]);
+      setError('Could not retrieve transaction logs from the server.');
     } finally {
       setLoading(false);
     }
@@ -49,6 +46,7 @@ export default function Expenses() {
   const handleSaveExpense = async (e) => {
     e.preventDefault();
     if (!amount) return;
+    setError('');
 
     const payload = {
       category,
@@ -74,21 +72,7 @@ export default function Expenses() {
       fetchExpenses();
     } catch (err) {
       console.error('Error saving expense:', err);
-      // simulated save for front-end fidelity
-      const newEx = {
-        id: editingId || Date.now(),
-        ...payload
-      };
-      if (editingId) {
-        setExpenses(expenses.map(x => x.id === editingId ? newEx : x));
-      } else {
-        setExpenses([newEx, ...expenses]);
-      }
-      setEditingId(null);
-      setAmount('');
-      setDescription('');
-      setOcrResult(null);
-      setSelectedImage(null);
+      setError(err.response?.data?.message || 'Failed to save transaction. Data was not persisted.');
     }
   };
 
@@ -104,20 +88,21 @@ export default function Expenses() {
   };
 
   const handleDelete = async (id) => {
+    setError('');
     try {
       await expenseApi.delete(id);
       setExpenses(expenses.filter(x => x.id !== id));
     } catch (err) {
-      // optimistic delete
-      setExpenses(expenses.filter(x => x.id !== id));
+      setError(err.response?.data?.message || 'Failed to delete expense from server.');
     }
   };
 
-  // OCR Simulator Handler
+  // OCR Handler
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
+    setError('');
     setSelectedImage(URL.createObjectURL(file));
     const reader = new FileReader();
     reader.onloadend = async () => {
@@ -128,28 +113,15 @@ export default function Expenses() {
         const data = res.data;
         setOcrResult(data);
         
-        // Populate standard fields instantly to satisfy "Auto-extract amount/date"
+        // Populate standard fields
         if (data.amount) setAmount(data.amount);
         if (data.category && categories.includes(data.category)) setCategory(data.category);
         if (data.date) setDate(data.date);
         setDescription(`Extracted via OCR receipt copy`);
         setReceiptUrl(file.name);
       } catch (err) {
-        // Fallback simulation client side extraction logic
-        setTimeout(() => {
-          const sampleCat = categories[Math.floor(Math.random() * categories.length)];
-          const sampleAmt = Math.round(350 + Math.random() * 2100);
-          setOcrResult({
-            amount: sampleAmt,
-            category: sampleCat,
-            date: new Date().toISOString().split('T')[0],
-            extractedText: `VENDOR: HYPERMARKET CHAIN\nTOTAL: ₹${sampleAmt}\nSTATUS: SCANNED CLIENT COPY`
-          });
-          setAmount(sampleAmt);
-          setCategory(sampleCat);
-          setDescription('Auto-extracted receipt entry');
-          setOcrLoading(false);
-        }, 1200);
+        setError('OCR service is currently offline or failed to analyze the image.');
+        setOcrResult(null);
       } finally {
         setOcrLoading(false);
       }
@@ -163,6 +135,7 @@ export default function Expenses() {
 
   return (
     <div className="expenses-page fade-in">
+      {error && <div className="alert alert-danger mb-4 p-3 rounded bg-danger-bg text-danger border border-danger/20 text-xs font-semibold">{error}</div>}
       <div className="expenses-grid">
         {/* Left column: Entry Form & Advanced OCR Input */}
         <div className="entry-column">

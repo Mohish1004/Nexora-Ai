@@ -3,6 +3,7 @@ package com.finance.expenseanalyzer.controller;
 import com.finance.expenseanalyzer.dto.ExpenseDto;
 import com.finance.expenseanalyzer.dto.MessageResponse;
 import com.finance.expenseanalyzer.service.ExpenseService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -23,12 +24,12 @@ public class ExpenseController {
     }
 
     @PostMapping
-    public ResponseEntity<ExpenseDto> createExpense(@RequestBody ExpenseDto expenseDto) {
+    public ResponseEntity<ExpenseDto> createExpense(@Valid @RequestBody ExpenseDto expenseDto) {
         return ResponseEntity.ok(expenseService.createExpense(expenseDto));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ExpenseDto> updateExpense(@PathVariable Long id, @RequestBody ExpenseDto expenseDto) {
+    public ResponseEntity<ExpenseDto> updateExpense(@PathVariable Long id, @Valid @RequestBody ExpenseDto expenseDto) {
         return ResponseEntity.ok(expenseService.updateExpense(id, expenseDto));
     }
 

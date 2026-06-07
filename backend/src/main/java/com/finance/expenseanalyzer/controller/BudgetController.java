@@ -2,6 +2,7 @@ package com.finance.expenseanalyzer.controller;
 
 import com.finance.expenseanalyzer.dto.BudgetDto;
 import com.finance.expenseanalyzer.service.BudgetService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -27,7 +28,7 @@ public class BudgetController {
     }
 
     @PostMapping
-    public ResponseEntity<BudgetDto> setBudget(@RequestBody BudgetDto budgetDto) {
+    public ResponseEntity<BudgetDto> setBudget(@Valid @RequestBody BudgetDto budgetDto) {
         return ResponseEntity.ok(budgetService.saveOrUpdateBudget(budgetDto));
     }
 }

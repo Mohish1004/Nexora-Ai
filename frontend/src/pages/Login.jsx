@@ -6,10 +6,31 @@ import './Auth.css';
 
 export default function Login({ onLoginSuccess }) {
   const navigate = useNavigate();
-  const [email, setEmail] = useState('demo@finance.ai');
-  const [password, setPassword] = useState('password');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  const handleDemoLogin = async () => {
+    setError('');
+    setLoading(true);
+    try {
+      const response = await authApi.login({ email: 'demo@finance.ai', password: 'password' });
+      const data = response.data;
+      localStorage.setItem('jwt_token', data.token);
+      localStorage.setItem('user_info', JSON.stringify({
+        id: data.id,
+        name: data.name,
+        email: data.email
+      }));
+      onLoginSuccess();
+      navigate('/dashboard');
+    } catch (err) {
+      setError('Failed to log in as demo user. Please make sure the backend is running.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -28,23 +49,7 @@ export default function Login({ onLoginSuccess }) {
       onLoginSuccess();
       navigate('/dashboard');
     } catch (err) {
-      // Standalone simulator fallback if backend is offline
-      const users = JSON.parse(localStorage.getItem('registered_users') || '{}');
-      const customUser = users[email];
-
-      if (email === 'demo@finance.ai' || customUser) {
-        const userName = customUser ? customUser.name : 'Demo Financial Investor';
-        localStorage.setItem('jwt_token', 'Mock.Token.String.Demo.Active');
-        localStorage.setItem('user_info', JSON.stringify({
-          id: customUser ? Date.now() : 1,
-          name: userName,
-          email: email
-        }));
-        onLoginSuccess();
-        navigate('/dashboard');
-      } else {
-        setError(err.response?.data?.message || err.response?.data?.error || 'Account not found on server/offline storage. Try registering first or use demo@finance.ai');
-      }
+      setError(err.response?.data?.message || err.response?.data?.error || 'Incorrect credentials, or authentication service is currently offline.');
     } finally {
       setLoading(false);
     }
@@ -111,8 +116,16 @@ export default function Login({ onLoginSuccess }) {
           <p>New to intelligence tracking? <Link to="/register">Create an account</Link></p>
         </div>
 
-        <div className="demo-credentials">
-          <span>💡 <b>Demo Account pre-loaded:</b> demo@finance.ai / password</span>
+        <div className="demo-credentials flex flex-col gap-2 mt-4 pt-4 border-t border-color text-center">
+          <span className="text-xs text-muted">Want to preview the AI capabilities?</span>
+          <button 
+            type="button" 
+            onClick={handleDemoLogin} 
+            disabled={loading}
+            className="btn btn-secondary btn-xs py-2 w-full text-xs font-semibold flex items-center justify-center gap-1.5"
+          >
+            🚀 Try Demo Sandbox (Pre-seeded Data)
+          </button>
         </div>
       </div>
     </div>
