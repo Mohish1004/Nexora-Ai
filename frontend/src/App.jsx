@@ -20,15 +20,6 @@ export default function App() {
     const token = localStorage.getItem('jwt_token');
     if (token) {
       setIsAuthenticated(true);
-    } else {
-      // Auto pre-populate simulator state for flawless offline rendering if user directly navigates
-      localStorage.setItem('jwt_token', 'Mock.Token.String.Demo.Active');
-      localStorage.setItem('user_info', JSON.stringify({
-        id: 1,
-        name: 'Demo Financial Investor',
-        email: 'demo@finance.ai'
-      }));
-      setIsAuthenticated(true);
     }
 
     // Load custom theme
