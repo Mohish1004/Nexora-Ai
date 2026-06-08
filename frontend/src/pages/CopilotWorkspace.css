@@ -1,5 +1,3 @@
-/* CentricAI Copilot Workspace Styles - Premium Glassmorphism & Spacing */
-
 .copilot-workspace-wrapper {
   position: relative;
   width: 100%;
@@ -9,14 +7,13 @@
   flex-direction: column;
 }
 
-/* Glowing radials */
 .workspace-mesh {
   position: absolute;
   top: -10%;
   left: 5%;
   width: 50%;
   height: 50%;
-  background: radial-gradient(circle, rgba(99, 102, 241, 0.1) 0%, rgba(99, 102, 241, 0) 70%);
+  background: radial-gradient(circle, hsla(var(--primary), 0.1) 0%, transparent 70%);
   z-index: 1;
   pointer-events: none;
   filter: blur(60px);
@@ -28,7 +25,7 @@
   right: 5%;
   width: 40%;
   height: 40%;
-  background: radial-gradient(circle, rgba(167, 139, 250, 0.08) 0%, rgba(167, 139, 250, 0) 60%);
+  background: radial-gradient(circle, hsla(var(--accent), 0.08) 0%, transparent 60%);
   z-index: 1;
   pointer-events: none;
   filter: blur(60px);
@@ -49,14 +46,16 @@
   }
 }
 
-/* Left Sidebar - AI Engines Selector */
 .copilot-modes-sidebar {
   padding: 24px;
   display: flex;
   flex-direction: column;
   background: var(--bg-glass);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
   border: 1px solid hsl(var(--border-color));
   border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-glass);
 }
 
 .copilot-modes-sidebar .sidebar-header {
@@ -94,12 +93,14 @@
 }
 
 .mode-btn:hover {
-  background: hsla(var(--primary), 0.03);
+  background: var(--bg-glass);
+  -webkit-backdrop-filter: var(--glass-blur-sm);
+  backdrop-filter: var(--glass-blur-sm);
   border-color: hsla(var(--primary), 0.15);
 }
 
 .mode-btn.active {
-  background: hsla(var(--primary), 0.08);
+  background: var(--bg-glass-strong);
   border-color: var(--mode-color, hsl(var(--primary)));
 }
 
@@ -110,9 +111,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(255, 255, 255, 0.02);
-  color: var(--mode-color, #ffffff);
-  border: 1px solid rgba(255, 255, 255, 0.04);
+  background: var(--bg-glass);
+  color: var(--mode-color, hsl(var(--text-main)));
+  border: 1px solid hsl(var(--border-color));
   flex-shrink: 0;
   transition: transform 0.2s ease;
 }
@@ -134,16 +135,18 @@
   margin-top: 2px;
 }
 
-/* Right Chat Container */
 .copilot-chat-container {
   display: flex;
   flex-direction: column;
   background: var(--bg-glass);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
   border: 1px solid hsl(var(--border-color));
   border-radius: var(--radius-lg);
   overflow: hidden;
   height: calc(100vh - 160px);
   min-height: 580px;
+  box-shadow: var(--shadow-glass);
 }
 
 .chat-header {
@@ -189,7 +192,6 @@
   animation: pulse 1.5s infinite;
 }
 
-/* Chat timeline */
 .chat-viewport {
   flex: 1;
   overflow-y: auto;
@@ -233,7 +235,7 @@
 }
 
 .message-avatar.user {
-  background: hsl(var(--bg-surface));
+  background: var(--bg-glass);
   border: 1px solid hsl(var(--border-color));
   color: hsl(var(--text-muted));
 }
@@ -247,7 +249,9 @@
 }
 
 .chat-message-row:not(.user) .message-bubble {
-  background: hsl(var(--bg-surface));
+  background: var(--bg-glass-strong);
+  -webkit-backdrop-filter: var(--glass-blur-sm);
+  backdrop-filter: var(--glass-blur-sm);
   border: 1px solid hsl(var(--border-color));
   border-top-left-radius: 4px;
   color: hsl(var(--text-main));
@@ -259,7 +263,6 @@
   border-top-right-radius: 4px;
 }
 
-/* Action suggestion chips */
 .chat-suggested-prompts {
   display: flex;
   flex-wrap: wrap;
@@ -285,7 +288,6 @@
   background: hsla(var(--primary), 0.05);
 }
 
-/* Typing indicator */
 .typing-dots {
   display: flex;
   align-items: center;
@@ -309,13 +311,14 @@
   40% { transform: scale(1.0); }
 }
 
-/* Chat Input Bar */
 .chat-input-bar {
   display: flex;
   gap: 12px;
   padding: 16px 24px;
   border-top: 1px solid hsl(var(--border-color));
-  background: hsla(var(--bg-base), 0.4);
+  background: var(--bg-glass);
+  -webkit-backdrop-filter: var(--glass-blur-sm);
+  backdrop-filter: var(--glass-blur-sm);
 }
 
 .chat-input-bar input {
@@ -323,7 +326,9 @@
   padding: 12px 16px;
   font-family: var(--font-primary);
   font-size: 0.88rem;
-  background: hsl(var(--bg-surface));
+  background: var(--bg-glass);
+  -webkit-backdrop-filter: var(--glass-blur-sm);
+  backdrop-filter: var(--glass-blur-sm);
   color: hsl(var(--text-main));
   border: 1px solid hsl(var(--border-color));
   border-radius: 12px;

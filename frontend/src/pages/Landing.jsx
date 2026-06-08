@@ -22,6 +22,20 @@ import './Landing.css';
 export default function Landing({ isAuthenticated }) {
   const navigate = useNavigate();
   const chatEndRef = useRef(null);
+
+  const logTelemetryEvent = (eventName, data) => {
+    try {
+      const logs = JSON.parse(localStorage.getItem('centricai_telemetry_logs') || '[]');
+      logs.push({
+        timestamp: new Date().toISOString(),
+        event: eventName,
+        details: data
+      });
+      localStorage.setItem('centricai_telemetry_logs', JSON.stringify(logs.slice(-100)));
+    } catch (e) {
+      console.warn('Telemetry logging failed:', e);
+    }
+  };
   
   // States
   const [ocrLoading, setOcrLoading] = useState(false);
@@ -52,6 +66,7 @@ export default function Landing({ isAuthenticated }) {
 
   const handleDemoLogin = async () => {
     setDemoLoading(true);
+    logTelemetryEvent('landing_demo_login_clicked', {});
     try {
       const response = await authApi.login({ email: 'demo@finance.ai', password: 'password' });
       const data = response.data;
@@ -75,6 +90,7 @@ export default function Landing({ isAuthenticated }) {
     
     setSelectedImage(URL.createObjectURL(file));
     setOcrLoading(true);
+    logTelemetryEvent('landing_ocr_upload', { fileName: file.name });
     
     setTimeout(() => {
       setOcrResult({
@@ -123,12 +139,14 @@ export default function Landing({ isAuthenticated }) {
     const text = chatInput.trim();
     if (!text) return;
 
+    logTelemetryEvent('landing_chat_message_sent', { query: text });
     setDemoMessages(prev => [...prev, { id: Date.now(), sender: 'user', text }]);
     setChatInput('');
     runLiveDemoResponse(text);
   };
 
   const handleDemoQuickAction = (text) => {
+    logTelemetryEvent('landing_chat_quick_action', { action: text });
     setDemoMessages(prev => [...prev, { id: Date.now(), sender: 'user', text }]);
     runLiveDemoResponse(text);
   };

@@ -60,8 +60,11 @@ public class SecurityConfig {
                 .requestMatchers("/api/auth/**", "/h2-console/**", "/error").permitAll()
                 .anyRequest().authenticated()
             )
-            // Fix H2 console display in iframe
-            .headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin));
+            // Fix H2 console display in iframe and add Content Security Policy (CSP)
+            .headers(headers -> headers
+                .frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin)
+                .contentSecurityPolicy(csp -> csp.policyDirectives("default-src 'self'; connect-src 'self' ws: wss: http: https:; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; frame-ancestors 'self'"))
+            );
 
         http.authenticationProvider(authenticationProvider());
         http.addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);

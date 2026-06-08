@@ -133,13 +133,14 @@ export default function Dashboard() {
   const handleExplainTrend = async () => {
     setExplaining(true);
     try {
-      await new Promise(r => setTimeout(r, 1500));
+      const res = await aiApi.explainTrend(recentExpenses);
+      setExplainTrend(res.data.explanation);
+    } catch (err) {
+      console.warn("AI Service offline. Using local trend simulation.");
       const expText = predictions?.trendSummary 
-        ? `I analyzed your spending trajectory: ${predictions.trendSummary}. Based on current velocities, food purchases represent the highest acceleration point.`
+        ? `[Offline Fallback] I analyzed your spending trajectory: ${predictions.trendSummary}. Based on current velocities, food purchases represent the highest acceleration point.`
         : "I detected a 14% increase in shopping transaction volumes compared to your historical 3-month rolling median. This is primarily triggered by recurring digital subscriptions.";
       setExplainTrend(expText);
-    } catch {
-      setExplainTrend("Failed to reach RandomForest engine. Try again shortly.");
     } finally {
       setExplaining(false);
     }

@@ -1,17 +1,14 @@
-/* CentricAI Premium Landing Page Styles */
-
 .landing-wrapper {
   position: relative;
   width: 100%;
   min-height: 100vh;
-  background-color: #030712; /* Deep modern dark base */
+  background: #030712;
   color: #f3f4f6;
   font-family: var(--font-primary);
   overflow-x: hidden;
   padding-bottom: 4rem;
 }
 
-/* Background Glowing Mesh (Stripe/Linear style) */
 .radial-mesh {
   position: absolute;
   top: -20%;
@@ -36,7 +33,6 @@
   filter: blur(100px);
 }
 
-/* Header Navbar */
 .landing-header {
   display: flex;
   justify-content: space-between;
@@ -124,7 +120,6 @@
   color: #ffffff;
 }
 
-/* Hero Section */
 .hero-section {
   position: relative;
   z-index: 10;
@@ -203,7 +198,6 @@
   opacity: 1;
 }
 
-/* Floating Metrics Counters */
 .hero-metrics-container {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -215,7 +209,10 @@
   padding: 1.5rem;
   text-align: center;
   background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: var(--radius-lg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }
 
 .metric-label {
@@ -236,7 +233,6 @@
   -webkit-text-fill-color: transparent;
 }
 
-/* Grid showcases */
 .showcase-section {
   position: relative;
   z-index: 10;
@@ -255,12 +251,25 @@
   .hero-metrics-container {
     grid-template-columns: 1fr;
   }
+  .hero-headline {
+    font-size: 2.5rem;
+  }
 }
 
 .showcase-card {
   padding: 2.25rem;
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: var(--radius-lg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transition: all 0.3s ease;
+}
+
+.showcase-card:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(99, 102, 241, 0.2);
+  transform: translateY(-2px);
 }
 
 .icon-wrap {
@@ -278,19 +287,20 @@
 .color-four { background: rgba(236, 72, 153, 0.15); color: #f472b6; }
 .color-five { background: rgba(16, 185, 129, 0.15); color: #34d399; }
 
-/* Mockup UI Panel elements */
 .mockup-ui {
   border: 1px solid rgba(255, 255, 255, 0.08);
   background: rgba(17, 24, 39, 0.8);
+  border-radius: var(--radius-lg);
 }
 
 .ocr-interactive-showcase, .health-score-showcase {
   background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: var(--radius-lg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }
 
-/* Interactive OCR Uploader */
 .ocr-upload-box {
   background: rgba(17, 24, 39, 0.4);
   transition: all 0.2s ease;
@@ -305,7 +315,6 @@
   animation: fadeIn 0.4s ease forwards;
 }
 
-/* Radial Score meter SVG */
 .radial-score-meter svg {
   width: 140px;
   height: 140px;

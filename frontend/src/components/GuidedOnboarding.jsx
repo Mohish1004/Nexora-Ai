@@ -22,6 +22,20 @@ export default function GuidedOnboarding({ onComplete }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
+  const logTelemetryEvent = (eventName, data) => {
+    try {
+      const logs = JSON.parse(localStorage.getItem('centricai_telemetry_logs') || '[]');
+      logs.push({
+        timestamp: new Date().toISOString(),
+        event: eventName,
+        details: data
+      });
+      localStorage.setItem('centricai_telemetry_logs', JSON.stringify(logs.slice(-100)));
+    } catch (e) {
+      console.warn('Telemetry logging failed:', e);
+    }
+  };
+
   // Step 1: Persona Style
   const [persona, setPersona] = useState('Balanced'); // Balanced, Aggressive, Minimalist
 
@@ -51,6 +65,7 @@ export default function GuidedOnboarding({ onComplete }) {
 
   const handlePersonaSelect = (styleName) => {
     setPersona(styleName);
+    logTelemetryEvent('onboarding_persona_selected', { styleName });
     if (styleName === 'Aggressive') {
       setBudgetLimit('30000');
     } else if (styleName === 'Minimalist') {
@@ -118,6 +133,7 @@ export default function GuidedOnboarding({ onComplete }) {
 
   const handleNextStep = async () => {
     setError('');
+    logTelemetryEvent('onboarding_step_changed', { currentStep: step, nextStep: step + 1 });
 
     if (step === 1) {
       setStep(2);
@@ -497,7 +513,13 @@ export default function GuidedOnboarding({ onComplete }) {
               All financial vectors, budget thresholds, goals, and initial transactions are synchronized.
             </p>
 
-            <button onClick={onComplete} className="btn btn-primary w-full mt-8">
+            <button 
+              onClick={() => {
+                logTelemetryEvent('onboarding_completed', { persona });
+                onComplete();
+              }} 
+              className="btn btn-primary w-full mt-8"
+            >
               <span>Enter Workspace Dashboard</span>
             </button>
           </div>

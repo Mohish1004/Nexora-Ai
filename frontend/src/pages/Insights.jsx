@@ -39,18 +39,114 @@ export default function Insights() {
   const [chatInput, setChatInput] = useState('');
   const chatEndRef = useRef(null);
 
+  // Scenario Simulator State
+  const [simIncomeAdj, setSimIncomeAdj] = useState(0);
+  const [simSpendAdj, setSimSpendAdj] = useState(0);
+  const [scenarioTemplate, setScenarioTemplate] = useState('none');
+  const [monthlyData, setMonthlyData] = useState([]);
+  const [explainTrend, setExplainTrend] = useState(null);
+  const [explaining, setExplaining] = useState(false);
+
+  const chartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        display: true,
+        labels: { color: '#9ca3af', font: { family: 'Inter' } }
+      },
+    },
+    scales: {
+      x: { grid: { color: 'rgba(255,255,255,0.03)' }, ticks: { color: '#6b7280' } },
+      y: { grid: { color: 'rgba(255,255,255,0.03)' }, ticks: { color: '#6b7280' } }
+    }
+  };
+
+  const getSimulatedData = () => {
+    const baseInc = monthlyData.length > 0 ? monthlyData[monthlyData.length - 1].totalIncome || 75000 : 75000;
+    const baseExp = monthlyData.length > 0 ? monthlyData[monthlyData.length - 1].totalExpense || 45000 : 45000;
+    
+    const labels = [];
+    const baseValues = [];
+    const simValues = [];
+    
+    let baseAccum = 0;
+    let simAccum = 0;
+    
+    const now = new Date();
+    for (let i = 1; i <= 12; i++) {
+      const d = new Date(now.getFullYear(), now.getMonth() + i, 1);
+      const label = d.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
+      labels.push(label);
+      
+      const baseMonthlySurplus = baseInc - baseExp;
+      const simMonthlySurplus = (baseInc + parseFloat(simIncomeAdj || 0)) - (baseExp + parseFloat(simSpendAdj || 0));
+      
+      baseAccum += baseMonthlySurplus;
+      simAccum += simMonthlySurplus;
+      
+      baseValues.push(baseAccum);
+      simValues.push(simAccum);
+    }
+    
+    return { labels, baseValues, simValues };
+  };
+
+  const applyScenarioTemplate = (templateName) => {
+    setScenarioTemplate(templateName);
+    if (templateName === 'europe') {
+      setSimIncomeAdj(0);
+      setSimSpendAdj(-8000);
+    } else if (templateName === 'car') {
+      setSimIncomeAdj(0);
+      setSimSpendAdj(12000);
+    } else if (templateName === 'raise') {
+      setSimIncomeAdj(15000);
+      setSimSpendAdj(0);
+    } else {
+      setSimIncomeAdj(0);
+      setSimSpendAdj(0);
+    }
+  };
+
+  const handleExplainTrend = async () => {
+    setExplaining(true);
+    setExplainTrend(null);
+    try {
+      const simData = getSimulatedData();
+      const res = await aiApi.explainTrend(
+        simData.simValues.map((val, idx) => ({
+          category: 'Surplus',
+          amount: val,
+          date: `2026-${String(idx + 1).padStart(2, '0')}-01`
+        }))
+      );
+      setExplainTrend(res.data.explanation);
+    } catch (err) {
+      console.warn("AI Service offline. Using local trend simulation.");
+      const delta = simIncomeAdj - simSpendAdj;
+      setExplainTrend(
+        `[Offline Fallback] 12-month trajectory projection shows a baseline surplus accumulation of ₹${getSimulatedData().baseValues[11].toLocaleString()} by year-end. Your simulated adjustments of ${delta >= 0 ? '+' : ''}₹${delta.toLocaleString()}/month would alter your cumulative savings vector to ₹${getSimulatedData().simValues[11].toLocaleString()} (a difference of ₹${(getSimulatedData().simValues[11] - getSimulatedData().baseValues[11]).toLocaleString()}).`
+      );
+    } finally {
+      setExplaining(false);
+    }
+  };
+
   const fetchAll = useCallback(async () => {
     try {
       setLoading(true);
       setError('');
       
-      const [expRes, incRes] = await Promise.all([
+      const [expRes, incRes, mRes] = await Promise.all([
         expenseApi.getAll(),
-        incomeApi.getAll()
+        incomeApi.getAll(),
+        analyticsApi.getMonthly(6)
       ]);
       const expenses = expRes.data || [];
       const incomes = incRes.data || [];
       const totalIncome = incomes.reduce((acc, curr) => acc + (curr.amount || 0), 0);
+      setMonthlyData(mRes.data || []);
 
       if (wsConnected) {
         // Trigger live WebSocket ML ensemble analysis
@@ -251,6 +347,9 @@ export default function Insights() {
         </button>
         <button className={`tab-btn ${activeTab === 'predictions' ? 'active' : ''}`} onClick={() => setActiveTab('predictions')}>
           <TrendingUp size={16} /> Forecast
+        </button>
+        <button className={`tab-btn ${activeTab === 'simulator' ? 'active' : ''}`} onClick={() => setActiveTab('simulator')}>
+          <Zap size={16} /> Scenario Simulator
         </button>
       </div>
 
@@ -680,6 +779,176 @@ export default function Insights() {
                     {predictions?.trendSummary || 'Machine Learning feature inference detected systemic patterns.'}
                   </div>
                 </div>
+              </div>
+            </div>
+          )}
+
+          {/* Tab: Scenario Simulator */}
+          {activeTab === 'simulator' && (
+            <div className="insights-grid" style={{ gridTemplateColumns: '1fr 1.5fr' }}>
+              <div className="glass-panel p-6 flex flex-col gap-6">
+                <div className="panel-header mb-2">
+                  <h3 className="flex items-center gap-2">
+                    <Zap className="text-warning" size={20} />
+                    <span>Scenario Simulator & Projections</span>
+                  </h3>
+                  <span className="badge badge-bills">AI Forecasting</span>
+                </div>
+
+                <div className="space-y-4">
+                  <div>
+                    <label className="text-xs text-muted block font-semibold mb-2 uppercase">Scenario Templates</label>
+                    <div className="grid grid-cols-2 gap-2">
+                      <button 
+                        type="button"
+                        onClick={() => applyScenarioTemplate('europe')}
+                        className={`btn btn-secondary text-xs ${scenarioTemplate === 'europe' ? 'border-primary text-primary bg-primary-light/10' : ''}`}
+                      >
+                        ✈ Europe Trip
+                      </button>
+                      <button 
+                        type="button"
+                        onClick={() => applyScenarioTemplate('car')}
+                        className={`btn btn-secondary text-xs ${scenarioTemplate === 'car' ? 'border-primary text-primary bg-primary-light/10' : ''}`}
+                      >
+                        🚗 Buy a Car
+                      </button>
+                      <button 
+                        type="button"
+                        onClick={() => applyScenarioTemplate('raise')}
+                        className={`btn btn-secondary text-xs ${scenarioTemplate === 'raise' ? 'border-primary text-primary bg-primary-light/10' : ''}`}
+                      >
+                        📈 Salary Hike
+                      </button>
+                      <button 
+                        type="button"
+                        onClick={() => applyScenarioTemplate('none')}
+                        className={`btn btn-secondary text-xs ${scenarioTemplate === 'none' ? 'border-primary text-primary bg-primary-light/10' : ''}`}
+                      >
+                        ↺ Reset
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="pt-4 border-t border-color">
+                    <label className="text-xs text-muted block font-semibold mb-1 uppercase">Adjust Monthly Income</label>
+                    <div className="flex items-center gap-3">
+                      <input 
+                        type="range" 
+                        min="-20000" 
+                        max="50000" 
+                        step="1000"
+                        value={simIncomeAdj} 
+                        onChange={(e) => { setSimIncomeAdj(parseInt(e.target.value)); setScenarioTemplate('custom'); }} 
+                        className="w-full h-1 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-indigo-500" 
+                      />
+                      <span className="text-sm font-bold text-white min-w-[70px] text-right">
+                        {simIncomeAdj >= 0 ? '+' : ''}₹{simIncomeAdj.toLocaleString()}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="pt-2">
+                    <label className="text-xs text-muted block font-semibold mb-1 uppercase">Adjust Monthly Spending</label>
+                    <div className="flex items-center gap-3">
+                      <input 
+                        type="range" 
+                        min="-20000" 
+                        max="50000" 
+                        step="1000"
+                        value={simSpendAdj} 
+                        onChange={(e) => { setSimSpendAdj(parseInt(e.target.value)); setScenarioTemplate('custom'); }} 
+                        className="w-full h-1 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-indigo-500" 
+                      />
+                      <span className="text-sm font-bold text-white min-w-[70px] text-right">
+                        {simSpendAdj >= 0 ? '+' : ''}₹{simSpendAdj.toLocaleString()}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-4 p-4 bg-primary-light/25 rounded-md border border-primary/20 text-xs leading-relaxed">
+                  <span className="font-bold text-indigo-300 block mb-1">
+                    <Sparkles size={12} className="inline mr-1" />
+                    AI Scenario Feedback:
+                  </span>
+                  {scenarioTemplate === 'europe' && (
+                    <p>Reducing discretionary spend by ₹8,000 raises your monthly surplus. At this rate, any active vacation fund is achieved 42 days ahead of schedule, with zero debt exposure.</p>
+                  )}
+                  {scenarioTemplate === 'car' && (
+                    <p>Adding a ₹12,000 monthly car EMI cash outflow decreases your surplus rate. We predict you may experience budget tightness or need to postpone secondary mutual fund goals.</p>
+                  )}
+                  {scenarioTemplate === 'raise' && (
+                    <p>Simulating a salary hike of ₹15,000 increases your savings rate immediately to over 35%. We suggest route-mapping 50% of this increment directly to your mutual fund investments.</p>
+                  )}
+                  {scenarioTemplate === 'none' && (
+                    <p>Select a scenario template or drag the sliders to check 12-month future projections and read advice impact summaries.</p>
+                  )}
+                  {scenarioTemplate === 'custom' && (
+                    <p>Custom scenario: Monthly surplus delta is ₹{(simIncomeAdj - simSpendAdj).toLocaleString()}. This modifies your baseline cash accumulation timeline.</p>
+                  )}
+                </div>
+              </div>
+
+              <div className="glass-panel p-6">
+                <div className="panel-header mb-4 flex justify-between items-center">
+                  <div>
+                    <h3>12-Month Cumulative Surplus Projections</h3>
+                    <p className="text-[10px] text-gray-500">Autopilot projected savings comparison curve</p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button 
+                      onClick={handleExplainTrend}
+                      disabled={explaining}
+                      className="btn btn-secondary text-xs px-3 py-1.5 flex items-center gap-1 cursor-pointer"
+                    >
+                      <Sparkles size={14} className="text-indigo-400" />
+                      <span>{explaining ? 'Analyzing...' : 'Explain Trend'}</span>
+                    </button>
+                    <span className="badge badge-success">Simulated Projections</span>
+                  </div>
+                </div>
+
+                <div style={{ height: '360px' }}>
+                  <Line 
+                    options={chartOptions} 
+                    data={{
+                      labels: getSimulatedData().labels,
+                      datasets: [
+                        {
+                          label: 'Baseline Surplus (₹)',
+                          data: getSimulatedData().baseValues,
+                          borderColor: '#94a3b8',
+                          borderWidth: 2,
+                          borderDash: [5, 5],
+                          fill: false,
+                          tension: 0.3
+                        },
+                        {
+                          label: 'Simulated Scenario (₹)',
+                          data: getSimulatedData().simValues,
+                          borderColor: '#818cf8',
+                          backgroundColor: 'rgba(129, 140, 248, 0.05)',
+                          borderWidth: 3,
+                          fill: true,
+                          tension: 0.3
+                        }
+                      ]
+                    }} 
+                  />
+                </div>
+
+                {explainTrend && (
+                  <div className="explain-trend-outcome mt-4 p-4 rounded-lg bg-indigo-950/40 border border-indigo-800/40 text-xs text-indigo-200 fade-in">
+                    <div className="flex items-start gap-2">
+                      <Sparkles size={14} className="text-indigo-400 mt-0.5 flex-shrink-0" />
+                      <div>
+                        <p className="font-bold text-white mb-1">AI Trend Synthesis</p>
+                        <p>{explainTrend}</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           )}

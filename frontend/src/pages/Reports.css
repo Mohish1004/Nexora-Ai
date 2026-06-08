@@ -5,11 +5,19 @@
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 16px;
+  background: var(--bg-glass);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  border: 1px solid hsl(var(--border-color));
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-glass);
 }
 
 .tab-pill-box {
   display: flex;
-  background-color: hsl(var(--bg-base));
+  background: var(--bg-glass);
+  -webkit-backdrop-filter: var(--glass-blur-sm);
+  backdrop-filter: var(--glass-blur-sm);
   padding: 4px;
   border-radius: var(--radius-md);
   border: 1px solid hsl(var(--border-color));
@@ -32,7 +40,7 @@
 }
 
 .tab-pill.active {
-  background-color: hsl(var(--bg-surface));
+  background: hsl(var(--bg-surface));
   color: hsl(var(--primary));
   box-shadow: var(--shadow-sm);
 }

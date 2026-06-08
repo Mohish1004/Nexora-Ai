@@ -33,6 +33,11 @@ public class AiIntegrationController {
         return ResponseEntity.ok(aiIntegrationService.scanReceipt(base64Image, fileName));
     }
 
+    @PostMapping("/explain-trend")
+    public ResponseEntity<Map<String, Object>> explainTrend(@RequestBody Map<String, Object> payload) {
+        return ResponseEntity.ok(aiIntegrationService.explainTrend(payload));
+    }
+
     @GetMapping("/anomalies")
     public ResponseEntity<AnomalyResponse> getAnomalies() {
         return ResponseEntity.ok(aiIntegrationService.getAnomalies());
@@ -51,5 +56,10 @@ public class AiIntegrationController {
     @GetMapping("/health")
     public ResponseEntity<Map<String, Object>> getAiHealth() {
         return ResponseEntity.ok(aiIntegrationService.getAiHealth());
+    }
+
+    @GetMapping("/subscriptions")
+    public ResponseEntity<Map<String, Object>> getSubscriptions() {
+        return ResponseEntity.ok(aiIntegrationService.getSubscriptions());
     }
 }

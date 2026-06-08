@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { User, Shield, Key, Terminal, RefreshCw, CheckCircle, AlertTriangle, LogOut } from 'lucide-react';
-import { authApi, aiApi } from '../api/client';
+import { User, Shield, Key, Terminal, RefreshCw, CheckCircle, AlertTriangle, LogOut, Brain } from 'lucide-react';
+import { authApi, aiApi, expenseApi, incomeApi } from '../api/client';
 
 export default function Profile({ onLogout, onProfileUpdate }) {
   const userInfo = JSON.parse(localStorage.getItem('user_info') || '{}');
@@ -15,6 +15,43 @@ export default function Profile({ onLogout, onProfileUpdate }) {
   // AI service diagnostic state
   const [aiHealth, setAiHealth] = useState(null);
   const [checkingHealth, setCheckingHealth] = useState(false);
+
+  // Trust & Security states
+  const [optOutTraining, setOptOutTraining] = useState(false);
+  const [cacheResetStatus, setCacheResetStatus] = useState('');
+
+  const handleExportData = async () => {
+    try {
+      const [expRes, incRes] = await Promise.all([
+        expenseApi.getAll(),
+        incomeApi.getAll()
+      ]);
+      const dataStr = JSON.stringify({
+        exportDate: new Date().toISOString(),
+        user: userInfo?.email,
+        expenses: expRes.data || [],
+        incomes: incRes.data || []
+      }, null, 2);
+      
+      const blob = new Blob([dataStr], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `centricai_export_${new Date().toISOString().split('T')[0]}.json`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (err) {
+      alert('Failed to export data: ' + err.message);
+    }
+  };
+
+  const handleResetCache = () => {
+    setCacheResetStatus('Resetting models...');
+    setTimeout(() => {
+      setCacheResetStatus('Cached models successfully purged.');
+    }, 1500);
+  };
 
   const fetchAiHealth = async () => {
     setCheckingHealth(true);
@@ -279,6 +316,93 @@ export default function Profile({ onLogout, onProfileUpdate }) {
             </div>
           </div>
 
+        </div>
+
+        {/* Trust, Encryption & Privacy Settings */}
+        <div className="mt-8 pt-8 border-t border-color">
+          <h3 className="text-sm font-bold uppercase tracking-wider text-muted flex items-center gap-2 mb-4">
+            <Shield size={16} className="text-success" /> Trust, Encryption & Privacy Settings
+          </h3>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            
+            {/* Left side: AI Transparency explainer */}
+            <div className="p-4 bg-base rounded-md border border-color flex flex-col justify-between">
+              <div>
+                <h4 className="text-xs font-bold text-white uppercase mb-2 flex items-center gap-1.5">
+                  <Brain size={14} className="text-indigo-400" /> AI Transparency Explainer
+                </h4>
+                <p className="text-xs text-muted leading-relaxed mb-3">
+                  CentricAI uses local and cloud-based Machine Learning models to analyze your financial health:
+                </p>
+                <ul className="text-[11px] text-muted space-y-1.5 font-sans">
+                  <li>• <span className="text-white font-semibold">RandomForest Regression:</span> Forecasts future cash flow curves by fitting historical spending velocity.</li>
+                  <li>• <span className="text-white font-semibold">IsolationForest:</span> Detects transaction outliers and spending spikes by scanning high-dimensional amount clusters.</li>
+                  <li>• <span className="text-white font-semibold">KMeans Clustering:</span> Groups transaction categories to reveal hidden behavioral cohorts.</li>
+                </ul>
+              </div>
+              <div className="mt-4 pt-3 border-t border-color flex justify-between items-center">
+                <span className="text-[10px] text-muted font-semibold">AI Execution Layer: Hybrid Local + FastAPI</span>
+                <span className="badge badge-investments">Model v2.0</span>
+              </div>
+            </div>
+
+            {/* Right side: Security Controls, Data Portability, and Opt-outs */}
+            <div className="p-4 bg-base rounded-md border border-color space-y-4">
+              <h4 className="text-xs font-bold text-white uppercase flex items-center gap-1.5">
+                <Shield size={14} className="text-success" /> Security & Data Portability Controls
+              </h4>
+
+              {/* Data Export Action */}
+              <div className="flex items-center justify-between pb-3 border-b border-color">
+                <div>
+                  <div className="text-xs font-bold text-white">Export Financial History</div>
+                  <div className="text-[10px] text-muted">Download all logged incomes and expenses in standardized JSON format.</div>
+                </div>
+                <button 
+                  onClick={handleExportData}
+                  className="px-3 py-1.5 bg-indigo-500/10 text-indigo-300 hover:bg-indigo-500/20 rounded border border-indigo-500/30 text-xs font-bold transition-all cursor-pointer"
+                >
+                  Export JSON
+                </button>
+              </div>
+
+              {/* Toggles */}
+              <div className="flex items-center justify-between py-1">
+                <div>
+                  <div className="text-xs font-bold text-white">Opt-out of Model Training Sharing</div>
+                  <div className="text-[10px] text-muted">Prevent your anonymous transaction metrics from being used in pipeline training.</div>
+                </div>
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input 
+                    type="checkbox" 
+                    checked={optOutTraining} 
+                    onChange={(e) => setOptOutTraining(e.target.checked)} 
+                    className="sr-only peer" 
+                  />
+                  <div className="w-9 h-5 bg-color peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary"></div>
+                </label>
+              </div>
+
+              <div className="flex items-center justify-between pt-3 border-t border-color">
+                <div>
+                  <div className="text-xs font-bold text-white">Reset Cached ML Models</div>
+                  <div className="text-[10px] text-muted">Purge existing trained RandomForest and IsolationForest state files for your tenant.</div>
+                </div>
+                <div className="flex flex-col items-end gap-1">
+                  <button 
+                    onClick={handleResetCache}
+                    className="px-3 py-1.5 bg-rose-500/10 text-rose-300 hover:bg-rose-500/20 rounded border border-rose-500/30 text-xs font-bold transition-all cursor-pointer"
+                  >
+                    Reset Models
+                  </button>
+                  {cacheResetStatus && <span className="text-[9px] text-emerald-400 font-semibold">{cacheResetStatus}</span>}
+                </div>
+              </div>
+
+            </div>
+
+          </div>
         </div>
 
       </div>

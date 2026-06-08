@@ -19,8 +19,8 @@
   width: 100%;
   padding: 2.5rem;
   background: var(--bg-glass);
-  backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
   border: 1px solid hsl(var(--border-color));
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-lg), 0 0 32px hsla(var(--primary), 0.1);
@@ -76,7 +76,9 @@
   gap: 14px;
   padding: 14px 18px;
   border-radius: 12px;
-  background: hsl(var(--bg-surface));
+  background: var(--bg-glass);
+  -webkit-backdrop-filter: var(--glass-blur-sm);
+  backdrop-filter: var(--glass-blur-sm);
   border: 1px solid hsl(var(--border-color));
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);

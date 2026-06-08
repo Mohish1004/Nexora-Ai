@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Sidebar from './components/Sidebar';
 import Topbar from './components/Topbar';
+import BottomNav from './components/BottomNav';
 import Landing from './pages/Landing';
 import Login from './pages/Login';
 import Register from './pages/Register';
@@ -64,6 +65,7 @@ export default function App() {
         <main className="content-area">
           {children}
         </main>
+        <BottomNav />
       </div>
     </>
   );

@@ -24,6 +24,15 @@ public class User {
     @Column(nullable = false, unique = true)
     private String email;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private String password;
+
+    @Column(name = "google_id", nullable = true)
+    private String googleId;
+
+    @Column(name = "github_id", nullable = true)
+    private String githubId;
+
+    @Column(nullable = true)
+    private String provider; // "local", "google", "github"
 }

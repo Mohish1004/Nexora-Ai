@@ -29,6 +29,7 @@ export default function Goals() {
   
   // Monthly surplus context for timeline forecasting
   const [monthlySurplus, setMonthlySurplus] = useState(15000);
+  const [sliderSurplus, setSliderSurplus] = useState(15000);
 
   // Form State
   const [editingId, setEditingId] = useState(null);
@@ -53,7 +54,9 @@ export default function Goals() {
       const totalInc = (incRes.data || []).reduce((sum, item) => sum + (item.amount || 0), 0);
       const totalExp = (expRes.data || []).reduce((sum, item) => sum + (item.amount || 0), 0);
       const surplus = totalInc - totalExp;
-      setMonthlySurplus(surplus > 0 ? surplus : 12000); // Fallback to 12000 if deficit or 0
+      const finalSurplus = surplus > 0 ? surplus : 12000;
+      setMonthlySurplus(finalSurplus);
+      setSliderSurplus(finalSurplus);
     } catch (err) {
       console.error('Failed to load goals data:', err);
       setError('Failed to retrieve goals index from database.');
@@ -126,7 +129,7 @@ export default function Goals() {
     const remaining = goal.targetAmount - goal.currentAmount;
     if (remaining <= 0) return 'Goal Completed!';
     
-    const months = Math.ceil(remaining / monthlySurplus);
+    const months = Math.ceil(remaining / sliderSurplus);
     const targetDate = new Date();
     targetDate.setMonth(targetDate.getMonth() + months);
     
@@ -171,7 +174,39 @@ export default function Goals() {
       <div className="goals-layout-grid grid grid-cols-1 lg:grid-cols-12 gap-8">
         
         {/* LEFT COLUMN: Input Form */}
-        <div className="lg:col-span-4">
+        <div className="lg:col-span-4 space-y-6">
+          
+          {/* Surplus Simulator Card */}
+          <div className="glass-panel p-6">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-indigo-400 mb-3 flex items-center gap-1.5">
+              <Sparkles size={14} /> Forecast Engine Simulator
+            </h3>
+            <p className="text-xs text-muted mb-4 leading-relaxed font-sans">
+              Drag the slider to simulate changes in your monthly savings surplus. Watch completion dates shift in real-time.
+            </p>
+            
+            <div className="flex justify-between items-center text-xs font-semibold mb-2">
+              <span>Simulated Surplus:</span>
+              <span className="text-indigo-400 text-sm font-bold">₹{sliderSurplus.toLocaleString()}/mo</span>
+            </div>
+            
+            <input 
+              type="range" 
+              min="2000" 
+              max="100000" 
+              step="1000"
+              value={sliderSurplus} 
+              onChange={(e) => setSliderSurplus(parseInt(e.target.value))}
+              className="w-full accent-indigo-500 bg-gray-950 h-1.5 rounded-lg appearance-none cursor-pointer"
+            />
+            
+            <div className="flex justify-between text-[10px] text-muted mt-2 font-mono">
+              <span>₹2k</span>
+              <span>₹50k</span>
+              <span>₹100k</span>
+            </div>
+          </div>
+
           <div className="glass-panel p-6">
             <div className="card-header mb-4">
               <h3>{editingId ? 'Modify Saved Target' : 'Create New Target'}</h3>

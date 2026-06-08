@@ -1,8 +1,3 @@
-/* ================================================================
-   DASHBOARD V2 — FINANCIAL MISSION CONTROL & STORYTELLING
-   Premium SaaS aesthetic with clean visual depth and indicators
-   ================================================================ */
-
 .dashboard-v2-wrapper {
   position: relative;
   width: 100%;
@@ -12,14 +7,13 @@
   flex-direction: column;
 }
 
-/* Glowing radials */
 .radial-mesh {
   position: absolute;
   top: -15%;
   left: 25%;
   width: 55%;
   height: 55%;
-  background: radial-gradient(circle, rgba(99, 102, 241, 0.08) 0%, rgba(99, 102, 241, 0) 70%);
+  background: radial-gradient(circle, hsla(var(--primary), 0.1) 0%, transparent 70%);
   z-index: 1;
   pointer-events: none;
   filter: blur(60px);
@@ -31,26 +25,25 @@
   right: 5%;
   width: 45%;
   height: 45%;
-  background: radial-gradient(circle, rgba(244, 63, 94, 0.05) 0%, rgba(244, 63, 94, 0) 60%);
+  background: radial-gradient(circle, hsla(var(--accent), 0.06) 0%, transparent 60%);
   z-index: 1;
   pointer-events: none;
   filter: blur(60px);
 }
 
-/* Header section styling */
 .mission-control-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   position: relative;
   z-index: 10;
+  margin-bottom: 24px;
 }
 
 .mission-control-header h1 {
   font-size: 2rem;
   letter-spacing: -0.04em;
   font-weight: 850;
-  color: #ffffff;
 }
 
 @media (max-width: 768px) {
@@ -61,7 +54,6 @@
   }
 }
 
-/* Main Grid Layout */
 .mission-control-grid {
   display: grid;
   grid-template-columns: 440px 1fr;
@@ -76,25 +68,26 @@
   }
 }
 
-/* Left Column Styling */
 .left-column-metrics {
   display: flex;
   flex-direction: column;
   gap: 24px;
 }
 
-/* Financial Health Score Dial styling */
 .health-dial-card {
   padding: 24px;
   background: var(--bg-glass);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
   border: 1px solid hsl(var(--border-color));
   border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--shadow-glass);
   transition: all 0.3s ease;
 }
 
 .health-dial-card:hover {
-  box-shadow: var(--shadow-lg), 0 0 24px hsla(var(--primary), 0.05);
+  box-shadow: var(--shadow-lg);
+  border-color: hsla(var(--primary), 0.15);
 }
 
 .card-header {
@@ -120,8 +113,8 @@
   letter-spacing: 0.06em;
 }
 
-.badge-tag.primary { background: hsla(var(--primary), 0.12); color: #818cf8; border: 1px solid hsla(var(--primary), 0.2); }
-.badge-tag.warning { background: hsla(var(--warning), 0.12); color: #fbbf24; border: 1px solid hsla(var(--warning), 0.2); }
+.badge-tag.primary { background: hsla(var(--primary), 0.12); color: hsl(var(--primary)); border: 1px solid hsla(var(--primary), 0.2); }
+.badge-tag.warning { background: hsla(var(--warning), 0.12); color: hsl(var(--warning)); border: 1px solid hsla(var(--warning), 0.2); }
 
 .health-dial-container {
   display: flex;
@@ -151,7 +144,7 @@
 
 .dial-track {
   fill: none;
-  stroke: rgba(255, 255, 255, 0.03);
+  stroke: hsl(var(--border-color));
   stroke-width: 8;
 }
 
@@ -191,13 +184,14 @@
   flex: 1;
 }
 
-/* Actionable Directives list */
 .actionable-intelligence-section {
   padding: 24px;
   background: var(--bg-glass);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
   border: 1px solid hsl(var(--border-color));
   border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--shadow-glass);
 }
 
 .directives-list {
@@ -223,21 +217,21 @@
 }
 
 .directive-item.problem .directive-icon {
-  background: rgba(244, 63, 94, 0.1);
-  color: #f43f5e;
-  border: 1px solid rgba(244, 63, 94, 0.15);
+  background: hsla(var(--danger), 0.1);
+  color: hsl(var(--danger));
+  border: 1px solid hsla(var(--danger), 0.15);
 }
 
 .directive-item.opportunity .directive-icon {
-  background: rgba(16, 185, 129, 0.1);
-  color: #10b981;
-  border: 1px solid rgba(16, 185, 129, 0.15);
+  background: hsla(var(--success), 0.1);
+  color: hsl(var(--success));
+  border: 1px solid hsla(var(--success), 0.15);
 }
 
 .directive-item.recommendation .directive-icon {
-  background: rgba(99, 102, 241, 0.1);
-  color: #818cf8;
-  border: 1px solid rgba(99, 102, 241, 0.15);
+  background: hsla(var(--primary), 0.1);
+  color: hsl(var(--primary));
+  border: 1px solid hsla(var(--primary), 0.15);
 }
 
 .directive-details {
@@ -252,12 +246,14 @@
   display: block;
 }
 
-/* Right Column Chart cards */
 .chart-card-v2 {
   padding: 24px;
   background: var(--bg-glass);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
   border: 1px solid hsl(var(--border-color));
   border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-glass);
 }
 
 .explain-trend-outcome {
@@ -272,19 +268,24 @@
 .forecast-summary-card {
   padding: 24px;
   background: var(--bg-glass);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
   border: 1px solid hsl(var(--border-color));
   border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-glass);
 }
 
 .forecast-stats {
-  border-bottom: 1px solid rgba(255, 255, 255, 0.02);
+  border-bottom: 1px solid hsl(var(--border-color));
   padding-bottom: 12px;
 }
 
 .stat-node {
   padding: 12px;
   border-radius: 10px;
-  background: hsl(var(--bg-surface));
+  background: var(--bg-glass);
+  -webkit-backdrop-filter: var(--glass-blur-sm);
+  backdrop-filter: var(--glass-blur-sm);
   border: 1px solid hsl(var(--border-color));
 }
 

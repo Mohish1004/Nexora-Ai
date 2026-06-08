@@ -12,6 +12,12 @@
 
 .edit-budget-card, .tracking-output-card {
   padding: 28px 24px;
+  background: var(--bg-glass);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  border: 1px solid hsl(var(--border-color));
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-glass);
 }
 
 .alert-badge {
