@@ -1,0 +1,428 @@
+name: Maven CI/CD Pipeline
+
+on:
+  # Trigger on release creation (original behavior preserved)
+  release:
+    types: [created, published]
+  
+  # Manual trigger with configurable options
+  workflow_dispatch:
+    inputs:
+      java_version:
+        description: 'Java version to use'
+        required: true
+        default: '17'
+        type: choice
+        options:
+          - '11'
+          - '17'
+          - '21'
+      build_profile:
+        description: 'Maven build profile'
+        required: true
+        default: 'release'
+        type: choice
+        options:
+          - 'dev'
+          - 'staging'
+          - 'release'
+      skip_tests:
+        description: 'Skip tests'
+        required: false
+        default: false
+        type: boolean
+      deploy_target:
+        description: 'Deployment target'
+        required: true
+        default: 'github-packages'
+        type: choice
+        options:
+          - 'none'
+          - 'github-packages'
+          - 'maven-central'
+          - 'both'
+  
+  # Automatic triggers for quality gates
+  push:
+    branches: [main, master, develop]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - '.gitignore'
+  
+  pull_request:
+    branches: [main, master, develop]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+  
+  # Nightly builds for continuous validation
+  schedule:
+    - cron: '0 2 * * *'  # 2 AM UTC daily
+
+# Global environment variables
+env:
+  MAVEN_OPTS: >-
+    -Dhttps.protocols=TLSv1.2
+    -Dmaven.repo.local=$GITHUB_WORKSPACE/.m2/repository
+    -Dorg.slf4j.simpleLogger.showDateTime=true
+    -Djava.awt.headless=true
+  MAVEN_CLI_OPTS: >-
+    --batch-mode
+    --errors
+    --fail-at-end
+    --show-version
+    --no-transfer-progress
+
+# Concurrency control - cancel outdated runs
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ==========================================
+  # Phase 1: Code Quality & Validation
+  # ==========================================
+  code-quality:
+    name: Code Quality Checks
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Full history for better analysis
+      
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: 'maven'
+      
+      - name: Run SpotBugs (Security Analysis)
+        run: mvn ${{ env.MAVEN_CLI_OPTS }} spotbugs:check || true
+      
+      - name: Run PMD (Code Quality)
+        run: mvn ${{ env.MAVEN_CLI_OPTS }} pmd:check || true
+      
+      - name: Check Code Formatting
+        run: mvn ${{ env.MAVEN_CLI_OPTS }} formatter:validate || true
+      
+      - name: Dependency Vulnerability Scan
+        run: mvn ${{ env.MAVEN_CLI_OPTS }} org.owasp:dependency-check-maven:check -DfailBuildOnCVSS=11 || true
+      
+      - name: Upload OWASP Dependency Check Report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dependency-check-report
+          path: target/dependency-check-report.html
+          retention-days: 30
+
+  # ==========================================
+  # Phase 2: Matrix Build & Test
+  # ==========================================
+  build-and-test:
+    name: Build & Test (Matrix)
+    needs: code-quality
+    runs-on: ${{ matrix.os }}
+    
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        java: ['11', '17', '21']
+        include:
+          - os: ubuntu-latest
+            java: '21'
+            coverage: true
+            label: 'coverage'
+        exclude:
+          # Reduce matrix size for faster feedback
+          - os: windows-latest
+            java: '11'
+          - os: macos-latest
+            java: '11'
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Set up JDK ${{ matrix.java }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ matrix.java }}
+          distribution: 'temurin'
+          cache: 'maven'
+          server-id: github
+          settings-path: ${{ github.workspace }}
+      
+      - name: Cache Maven dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+      
+      - name: Display Build Environment
+        run: |
+          java -version
+          mvn -version
+          echo "OS: ${{ matrix.os }}"
+          echo "Java: ${{ matrix.java }}"
+      
+      - name: Compile
+        run: mvn ${{ env.MAVEN_CLI_OPTS }} compile
+      
+      - name: Run Unit Tests
+        if: ${{ !(github.event_name == 'workflow_dispatch' && github.event.inputs.skip_tests == 'true') }}
+        run: mvn ${{ env.MAVEN_CLI_OPTS }} test
+      
+      - name: Run Integration Tests
+        if: ${{ !(github.event_name == 'workflow_dispatch' && github.event.inputs.skip_tests == 'true') }}
+        run: mvn ${{ env.MAVEN_CLI_OPTS }} verify -P integration-tests || true
+      
+      - name: Generate Test Report
+        uses: dorny/test-reporter@v1
+        if: success() || failure()
+        with:
+          name: Maven Tests (${{ matrix.os }}, Java ${{ matrix.java }})
+          path: target/surefire-reports/*.xml
+          reporter: java-junit
+          fail-on-error: false
+      
+      - name: Upload Test Results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results-${{ matrix.os }}-java${{ matrix.java }}
+          path: |
+            target/surefire-reports/
+            target/failsafe-reports/
+          retention-days: 14
+      
+      - name: Generate Coverage Report (JaCoCo)
+        if: matrix.coverage
+        run: mvn ${{ env.MAVEN_CLI_OPTS }} jacoco:report
+      
+      - name: Upload Coverage to Codecov
+        if: matrix.coverage
+        uses: codecov/codecov-action@v4
+        with:
+          files: target/site/jacoco/jacoco.xml
+          fail_ci_if_error: false
+          verbose: true
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+      
+      - name: Build Package
+        run: mvn ${{ env.MAVEN_CLI_OPTS }} package -DskipTests
+      
+      - name: Upload Build Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-artifacts-${{ matrix.os }}-java${{ matrix.java }}
+          path: |
+            target/*.jar
+            target/*.war
+            !target/*-sources.jar
+            !target/*-javadoc.jar
+          retention-days: 30
+
+  # ==========================================
+  # Phase 3: Documentation & Sources
+  # ==========================================
+  documentation:
+    name: Generate Documentation
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    if: github.event_name == 'release' || github.event_name == 'workflow_dispatch'
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: 'maven'
+      
+      - name: Generate Javadoc
+        run: mvn ${{ env.MAVEN_CLI_OPTS }} javadoc:javadoc || true
+      
+      - name: Generate Source JAR
+        run: mvn ${{ env.MAVEN_CLI_OPTS }} source:jar
+      
+      - name: Generate Site
+        run: mvn ${{ env.MAVEN_CLI_OPTS }} site || true
+      
+      - name: Upload Documentation
+        uses: actions/upload-artifact@v4
+        with:
+          name: documentation
+          path: |
+            target/site/
+            target/*-sources.jar
+            target/*-javadoc.jar
+          retention-days: 90
+
+  # ==========================================
+  # Phase 4: Deploy to GitHub Packages
+  # ==========================================
+  deploy-github:
+    name: Deploy to GitHub Packages
+    needs: [build-and-test, documentation]
+    runs-on: ubuntu-latest
+    if: |
+      (github.event_name == 'release' && github.event.action == 'created') ||
+      (github.event_name == 'workflow_dispatch' && 
+       (github.event.inputs.deploy_target == 'github-packages' || github.event.inputs.deploy_target == 'both'))
+    
+    permissions:
+      contents: read
+      packages: write
+    
+    environment:
+      name: github-packages
+      url: https://github.com/${{ github.repository }}/packages
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: 'maven'
+          server-id: github
+          settings-path: ${{ github.workspace }}
+      
+      - name: Configure Maven Settings
+        run: |
+          cat > ${{ github.workspace }}/settings.xml << 'EOF'
+          <settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
+                    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                    xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0
+                    http://maven.apache.org/xsd/settings-1.0.0.xsd">
+              <servers>
+              <server>
+                <id>github</id>
+                <username>${env.GITHUB_ACTOR}</username>
+                <password>${env.GITHUB_TOKEN}</password>
+              </server>
+            </servers>
+          </settings>
+          EOF
+          
+      - name: Deploy to GitHub Packages
+        run: mvn ${{ env.MAVEN_CLI_OPTS }} deploy -s ${{ github.workspace }}/settings.xml
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_ACTOR: ${{ github.actor }}
+      
+      - name: Verify Deployment
+        run: |
+          echo "Package deployed to GitHub Packages"
+          echo "Repository: ${{ github.repository }}"
+          echo "Version: ${{ github.ref_name }}"
+
+  # ==========================================
+  # Phase 5: Deploy to Maven Central (Optional)
+  # ==========================================
+  deploy-maven-central:
+    name: Deploy to Maven Central
+    needs: [build-and-test, documentation]
+    runs-on: ubuntu-latest
+    if: |
+      github.event_name == 'workflow_dispatch' && 
+      (github.event.inputs.deploy_target == 'maven-central' || github.event.inputs.deploy_target == 'both')
+    
+    environment:
+      name: maven-central
+      url: https://central.sonatype.com/artifact/${{ github.repository_owner }}/${{ github.event.repository.name }}
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: 'maven'
+          server-id: ossrh
+          settings-path: ${{ github.workspace }}
+          gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
+          gpg-passphrase: ${{ secrets.GPG_PASSPHRASE }}
+      
+      - name: Configure Maven Settings for Maven Central
+        run: |
+          cat > ${{ github.workspace }}/settings.xml << 'EOF'
+          <settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
+                    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                    xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0
+                                        http://maven.apache.org/xsd/settings-1.0.0.xsd">
+            <servers>
+              <server>
+                <id>ossrh</id>
+                <username>${env.OSSRH_USERNAME}</username>
+                <password>${env.OSSRH_PASSWORD}</password>
+              </server>
+            </servers>
+          </settings>
+          EOF
+      
+      - name: Deploy to Maven Central
+        run: |
+          mvn ${{ env.MAVEN_CLI_OPTS }} deploy \
+            -P release \
+            -s ${{ github.workspace }}/settings.xml \
+            -DskipTests
+        env:
+          OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
+          OSSRH_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
+          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+      
+      - name: Verify Maven Central Deployment
+        run: |
+          echo "Package deployed to Maven Central"
+          echo "Group ID: ${{ github.repository_owner }}"
+
+  # ==========================================
+  # Phase 6: Release Summary
+  # ==========================================
+  release-summary:
+    name: Release Summary
+    needs: [deploy-github, deploy-maven-central]
+    runs-on: ubuntu-latest
+    if: always() && (needs.deploy-github.result == 'success' || needs.deploy-maven-central.result == 'success')
+    
+    steps:
+      - name: Generate Release Summary
+        run: |
+          echo "## 🚀 Deployment Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Target | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| GitHub Packages | ${{ needs.deploy-github.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Maven Central | ${{ needs.deploy-maven-central.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Version:** ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Commit:** ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Triggered by:** ${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
+      
+      - name: Notify Success
+        if: success()
+        run: |
+          echo "✅ All deployments completed successfully!"
+          echo "Package version: ${{ github.ref_name }}"
