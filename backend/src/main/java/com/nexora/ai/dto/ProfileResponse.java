@@ -1,0 +1,17 @@
+package com.nexora.ai.dto;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class ProfileResponse {
+    private String email;
+    private String fullName;
+    private String role;
+    private String planType;
+}
