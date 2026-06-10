@@ -40,6 +40,8 @@ spring:
   config:
     activate:
       on-profile: local
+  autoconfigure:
+    exclude: org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
   datasource:
     url: jdbc:h2:mem:nexoradb;DB_CLOSE_DELAY=-1
     username: sa
