@@ -25,6 +25,6 @@ public class DepartmentBudget {
     @Column(name = "monthly_limit", nullable = false)
     private Double monthlyLimit;
 
-    @Column(nullable = false)
+    @Column(name = "budget_month", nullable = false)
     private String month; // e.g. "2026-06"
 }
