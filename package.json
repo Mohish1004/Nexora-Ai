@@ -11,6 +11,7 @@
     "install:all": "npm install --prefix frontend && npm install --prefix server"
   },
   "devDependencies": {
-    "concurrently": "^10.0.3"
+    "concurrently": "^10.0.3",
+    "shadcn": "^4.11.0"
   }
 }
