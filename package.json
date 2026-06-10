@@ -13,5 +13,8 @@
   "devDependencies": {
     "concurrently": "^10.0.3",
     "shadcn": "^4.11.0"
+  },
+  "dependencies": {
+    "@tremor/react": "^3.18.7"
   }
 }
