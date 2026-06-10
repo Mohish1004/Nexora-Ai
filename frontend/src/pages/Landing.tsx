@@ -72,9 +72,11 @@ export default function Landing() {
         </div>
 
         <nav className="hidden md:flex items-center gap-8 text-sm text-gray-400 font-medium">
-          <a href="#features" className="hover:text-white transition-colors">Features</a>
-          <a href="#solutions" className="hover:text-white transition-colors">Solutions</a>
-          <a href="#pricing" className="hover:text-white transition-colors">Pricing</a>
+          <a href="#features" className="landing-nav-link">Features</a>
+          <a href="#solutions" className="landing-nav-link">Solutions</a>
+          <a href="#pricing" className="landing-nav-link">Pricing</a>
+          <button onClick={() => navigate('/about')} className="landing-nav-link">About</button>
+          <button onClick={() => navigate('/help')} className="landing-nav-link">Help</button>
         </nav>
 
         <div className="flex items-center gap-4">
@@ -108,7 +110,7 @@ export default function Landing() {
           <div className="flex flex-col items-start text-left">
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-xs font-bold text-cyan-300 shadow-inner">
               <Sparkles size={12} className="text-cyan-400" />
-              <span>React 19 & Three.js Powered Intelligence</span>
+              <span>AI-First Intelligence Platform</span>
             </div>
 
             <h1 className="text-5xl lg:text-7xl font-black font-display tracking-tight leading-none text-white mt-6">
@@ -123,14 +125,14 @@ export default function Landing() {
             <div className="flex flex-wrap gap-4 mt-8">
               <button 
                 onClick={() => navigate('/register')}
-                className="px-8 py-4 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-semibold text-base transition-all shadow-lg flex items-center gap-2"
+                className="landing-hover-btn px-8 py-4 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-semibold text-base shadow-lg flex items-center gap-2"
               >
                 <span>Initialize Platform</span>
                 <ArrowRight size={18} />
               </button>
               <button 
                 onClick={() => navigate('/login')}
-                className="px-8 py-4 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white font-semibold text-base transition-all flex items-center gap-2"
+                className="landing-hover-btn px-8 py-4 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white font-semibold text-base flex items-center gap-2"
               >
                 Launch Demo Desk
               </button>
@@ -195,8 +197,8 @@ export default function Landing() {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-16">
             {/* Feature 1 */}
-            <div className="glass-card glass-card-hover p-8 rounded-2xl flex flex-col items-start text-left">
-              <div className="w-12 h-12 rounded-xl bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 flex items-center justify-center mb-6">
+            <div className="landing-hover-card glass-card p-8 rounded-2xl flex flex-col items-start text-left">
+              <div className="w-12 h-12 rounded-xl bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
                 <Activity size={20} />
               </div>
               <h3 className="font-bold text-lg text-white">Business Cash & Inventory</h3>
@@ -206,8 +208,8 @@ export default function Landing() {
             </div>
 
             {/* Feature 2 */}
-            <div className="glass-card glass-card-hover p-8 rounded-2xl flex flex-col items-start text-left">
-              <div className="w-12 h-12 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center justify-center mb-6">
+            <div className="landing-hover-card glass-card p-8 rounded-2xl flex flex-col items-start text-left">
+              <div className="w-12 h-12 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
                 <Layers size={20} />
               </div>
               <h3 className="font-bold text-lg text-white">Dual-Workspace Sandboxing</h3>
@@ -217,8 +219,8 @@ export default function Landing() {
             </div>
 
             {/* Feature 3 */}
-            <div className="glass-card glass-card-hover p-8 rounded-2xl flex flex-col items-start text-left">
-              <div className="w-12 h-12 rounded-xl bg-violet-500/10 text-violet-400 border border-violet-500/20 flex items-center justify-center mb-6">
+            <div className="landing-hover-card glass-card p-8 rounded-2xl flex flex-col items-start text-left">
+              <div className="w-12 h-12 rounded-xl bg-violet-500/10 text-violet-400 border border-violet-500/20 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
                 <ShieldCheck size={20} />
               </div>
               <h3 className="font-bold text-lg text-white">AI-Driven Auditing</h3>
@@ -272,7 +274,7 @@ export default function Landing() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
             {/* Plan 1 */}
-            <div className="glass-card p-8 rounded-2xl border border-white/10 flex flex-col items-start relative overflow-hidden">
+            <div className="landing-hover-card glass-card p-8 rounded-2xl border border-white/10 flex flex-col items-start relative overflow-hidden">
               <h3 className="text-lg font-bold text-white">Starter Pilot</h3>
               <p className="text-xs text-gray-400 mt-2">Perfect for single workspace managers.</p>
               <div className="text-4xl font-black text-white mt-6 font-display">₹0 <span className="text-xs text-gray-500 font-normal">/ forever</span></div>
@@ -290,7 +292,7 @@ export default function Landing() {
             </div>
 
             {/* Plan 2 */}
-            <div className="glass-card p-8 rounded-2xl border-2 border-cyan-500/30 flex flex-col items-start relative overflow-hidden bg-white/[0.04]">
+            <div className="landing-hover-card glass-card p-8 rounded-2xl border-2 border-cyan-500/30 flex flex-col items-start relative overflow-hidden bg-white/[0.04]">
               <div className="absolute top-4 right-4 px-2 py-0.5 rounded bg-cyan-500/20 text-[9px] uppercase font-bold text-cyan-400 tracking-wider">Most Premium</div>
               <h3 className="text-lg font-bold text-white">Enterprise Nexus</h3>
               <p className="text-xs text-gray-400 mt-2">Dual workspace access and advanced AI modules.</p>
@@ -313,6 +315,10 @@ export default function Landing() {
       </main>
 
       <footer className="w-full border-t border-white/5 py-12 mt-20 text-center text-xs text-gray-500 z-10 relative">
+        <div className="flex items-center justify-center gap-6 mb-4">
+          <button onClick={() => navigate('/about')} className="hover:text-white transition-colors">About</button>
+          <button onClick={() => navigate('/help')} className="hover:text-white transition-colors">Help</button>
+        </div>
         <p>&copy; {new Date().getFullYear()} Nexora AI. Developed for elite engineering audits. All rights reserved.</p>
       </footer>
     </div>

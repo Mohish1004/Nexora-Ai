@@ -146,7 +146,7 @@ export default function Topbar() {
                   {user?.name?.[0] || 'D'}
                 </div>
                 <div>
-                  <h3 className="font-bold text-sm text-white">{user?.name || 'Executive Director'}</h3>
+                  <h3 className="font-bold text-sm text-white">{user?.name || 'Standard User'}</h3>
                   <div className="flex items-center gap-1 text-[10px] text-cyan-400 font-bold uppercase mt-0.5">
                     <ShieldCheck size={10} />
                     <span>Nexora Enterprise</span>

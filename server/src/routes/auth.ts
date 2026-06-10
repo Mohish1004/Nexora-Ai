@@ -6,6 +6,8 @@ const router = Router();
 const DEMO_USER: User = {
   name: 'Sarah Connor',
   email: 'ceo@nexora.ai',
+  role: 'Standard User',
+  accountBalance: 0,
   workspaceMode: 'both',
 };
 
@@ -22,9 +24,11 @@ router.post('/register', (req, res) => {
   const { name, email, workspaceMode } = req.body;
   res.json({
     user: {
-      name: name || 'Executive Director',
-      email: email || 'ceo@nexora.ai',
-      workspaceMode: workspaceMode || 'both',
+      name: name || 'New User',
+      email: email || 'user@nexora.ai',
+      role: 'Standard User',
+      accountBalance: 0,
+      workspaceMode: workspaceMode || 'business',
     },
   });
 });

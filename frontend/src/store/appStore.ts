@@ -77,6 +77,8 @@ interface AppState {
   user: {
     name: string;
     email: string;
+    role: string;
+    accountBalance: number;
     workspaceMode: 'business' | 'personal' | 'both';
   } | null;
   activeWorkspace: 'business' | 'personal';
@@ -101,6 +103,9 @@ interface AppState {
   addGoal: (goal: Omit<Goal, 'id'>) => Promise<void>;
   updateGoalAmount: (id: string, amount: number) => Promise<void>;
   sendPaymentReminder: (receivableId: string) => Promise<void>;
+  addCustomer: (customer: { name: string; email: string; outstanding?: number }) => Promise<void>;
+  updateCustomer: (id: string, data: Partial<Customer>) => Promise<void>;
+  deleteCustomer: (id: string) => Promise<void>;
 }
 
 export const useAppStore = create<AppState>((set) => ({
@@ -120,7 +125,7 @@ export const useAppStore = create<AppState>((set) => ({
 
   login: (name, email, mode) => set({
     isAuthenticated: true,
-    user: { name, email, workspaceMode: mode },
+    user: { name, email, role: 'Standard User', accountBalance: 0, workspaceMode: mode },
     activeWorkspace: mode === 'personal' ? 'personal' : 'business',
   }),
 
@@ -142,20 +147,45 @@ export const useAppStore = create<AppState>((set) => ({
 
   fetchAllData: async () => {
     try {
-      const [inventory, customers, vendors, receivables, payables, expenses, goals, notifications] = await Promise.all([
-        api.getInventory(),
-        api.getCustomers(),
-        api.getVendors(),
-        api.getReceivables(),
-        api.getPayables(),
-        api.getExpenses(),
-        api.getGoals(),
-        api.getNotifications(),
-      ]);
-      set({
-        inventory, customers, vendors, receivables, payables, expenses, goals, notifications,
-        dataLoaded: true,
-      });
+      const state = useAppStore.getState();
+      const mode = state.user?.workspaceMode || 'business';
+      const isBusiness = mode === 'business' || mode === 'both';
+      const isPersonal = mode === 'personal' || mode === 'both';
+
+      const fetches: Promise<any>[] = [];
+      if (isBusiness) {
+        fetches.push(
+          api.getInventory(),
+          api.getCustomers(),
+          api.getVendors(),
+          api.getReceivables(),
+          api.getPayables(),
+        );
+      }
+      if (isPersonal) {
+        fetches.push(
+          api.getExpenses(),
+          api.getGoals(),
+        );
+      }
+      fetches.push(api.getNotifications());
+
+      const results = await Promise.all(fetches);
+      const update: any = { dataLoaded: true };
+      let idx = 0;
+      if (isBusiness) {
+        update.inventory = results[idx++];
+        update.customers = results[idx++];
+        update.vendors = results[idx++];
+        update.receivables = results[idx++];
+        update.payables = results[idx++];
+      }
+      if (isPersonal) {
+        update.expenses = results[idx++];
+        update.goals = results[idx++];
+      }
+      update.notifications = results[idx];
+      set(update);
     } catch (error) {
       console.error('Failed to fetch data:', error);
     }
@@ -208,6 +238,28 @@ export const useAppStore = create<AppState>((set) => ({
     const result = await api.sendReminder(id);
     set((state) => ({
       notifications: [result.notification, ...state.notifications],
+    }));
+  },
+
+  addCustomer: async (customer) => {
+    const result = await api.addCustomer(customer);
+    set((state) => ({
+      customers: [...state.customers, result.customer],
+      notifications: [result.notification, ...state.notifications],
+    }));
+  },
+
+  updateCustomer: async (id, data) => {
+    const updated = await api.updateCustomer(id, data);
+    set((state) => ({
+      customers: state.customers.map((c) => c.id === id ? updated : c),
+    }));
+  },
+
+  deleteCustomer: async (id) => {
+    await api.deleteCustomer(id);
+    set((state) => ({
+      customers: state.customers.filter((c) => c.id !== id),
     }));
   },
 }));

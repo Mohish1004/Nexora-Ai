@@ -79,5 +79,7 @@ export interface OCRResult {
 export interface User {
   name: string;
   email: string;
+  role?: string;
+  accountBalance?: number;
   workspaceMode: 'business' | 'personal' | 'both';
 }

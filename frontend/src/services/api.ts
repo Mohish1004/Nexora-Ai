@@ -24,6 +24,15 @@ export const api = {
 
   getCustomers: () => client.get('/customers').then(r => r.data),
 
+  addCustomer: (data: { name: string; email: string; outstanding?: number }) =>
+    client.post('/customers', data).then(r => r.data),
+
+  updateCustomer: (id: string, data: any) =>
+    client.put(`/customers/${id}`, data).then(r => r.data),
+
+  deleteCustomer: (id: string) =>
+    client.delete(`/customers/${id}`).then(r => r.data),
+
   getVendors: () => client.get('/vendors').then(r => r.data),
 
   getReceivables: () => client.get('/receivables').then(r => r.data),

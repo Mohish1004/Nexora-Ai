@@ -19,6 +19,8 @@ import PersonalReports from '../pages/PersonalReports';
 import CopilotWorkspace from '../pages/CopilotWorkspace';
 import Profile from '../pages/Profile';
 import Settings from '../pages/Settings';
+import About from '../pages/About';
+import Help from '../pages/Help';
 import FloatingPanel from '../components/ai/FloatingPanel';
 
 interface GuardProps {
@@ -39,9 +41,11 @@ export default function AppRoutes() {
         {/* Public Landing */}
         <Route path="/" element={<Landing />} />
 
-        {/* Auth Gates */}
+        {/* Public Pages */}
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/about" element={<About />} />
+        <Route path="/help" element={<Help />} />
         
         {/* Workspace Selector */}
         <Route 

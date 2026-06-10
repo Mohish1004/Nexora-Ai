@@ -10,14 +10,17 @@ import {
   CheckCircle,
   FileDown,
   FileUp,
-  X
+  X,
+  Camera
 } from 'lucide-react';
 import { mockApi } from '../services/mockApi';
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip } from 'recharts';
+import BarcodeScanner from '../components/BarcodeScanner';
 
 export default function Inventory() {
   const { inventory, addProduct, editProduct, deleteProduct } = useAppStore();
   const [showAddModal, setShowAddModal] = useState(false);
+  const [showScanner, setShowScanner] = useState(false);
   const [search, setSearch] = useState('');
   
   // Form state
@@ -313,14 +316,24 @@ export default function Inventory() {
 
               <div>
                 <label className="text-[9px] font-bold text-gray-500 uppercase tracking-wider block mb-1">SKU Code</label>
-                <input 
-                  type="text" 
-                  required
-                  value={sku}
-                  onChange={(e) => setSku(e.target.value)}
-                  placeholder="e.g. TAB-IPA-09"
-                  className="w-full px-3 py-2 text-xs glass-input"
-                />
+                <div className="flex gap-2">
+                  <input 
+                    type="text" 
+                    required
+                    value={sku}
+                    onChange={(e) => setSku(e.target.value)}
+                    placeholder="e.g. TAB-IPA-09"
+                    className="flex-1 px-3 py-2 text-xs glass-input"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowScanner(true)}
+                    className="px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-gray-400 hover:text-cyan-400 hover:border-cyan-500/30 transition-all"
+                    title="Scan barcode"
+                  >
+                    <Camera size={16} />
+                  </button>
+                </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
@@ -378,6 +391,14 @@ export default function Inventory() {
             </form>
           </div>
         </div>
+      )}
+
+      {/* Barcode Scanner Modal */}
+      {showScanner && (
+        <BarcodeScanner
+          onScan={(code) => setSku(code)}
+          onClose={() => setShowScanner(false)}
+        />
       )}
     </div>
   );

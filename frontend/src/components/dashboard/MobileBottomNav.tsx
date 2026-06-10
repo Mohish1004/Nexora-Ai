@@ -43,9 +43,10 @@ const personalMore = [
 ];
 
 function AiChatBubble({ isBusiness }: { isBusiness: boolean }) {
+  const { user } = useAppStore();
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Array<{ sender: 'ai' | 'user'; text: string }>>([
-    { sender: 'ai', text: "Ask Nexora anything about your workspace." }
+    { sender: 'ai', text: `Hello ${user?.name || 'there'}! Ask me about your ${isBusiness ? 'inventory, customers, and receivables' : 'expenses, goals, and savings'}.` }
   ]);
   const [input, setInput] = useState('');
 

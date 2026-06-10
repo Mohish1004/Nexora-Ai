@@ -1,23 +1,44 @@
 import React, { useState } from 'react';
 import { useAppStore, Customer } from '../store/appStore';
-import { Users, Search, UserCheck, DollarSign, Calendar, Mail } from 'lucide-react';
+import { Users, Search, UserCheck, DollarSign, Calendar, Mail, Plus, X, Trash2 } from 'lucide-react';
 
 export default function Customers() {
-  const { customers } = useAppStore();
+  const { customers, addCustomer, deleteCustomer } = useAppStore();
   const [search, setSearch] = useState('');
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(customers[0]);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [newName, setNewName] = useState('');
+  const [newEmail, setNewEmail] = useState('');
 
   const filtered = customers.filter(c => 
     c.name.toLowerCase().includes(search.toLowerCase()) || 
     c.email.toLowerCase().includes(search.toLowerCase())
   );
 
+  const handleAddCustomer = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newName || !newEmail) return;
+    addCustomer({ name: newName, email: newEmail, outstanding: 0 });
+    setNewName('');
+    setNewEmail('');
+    setShowAddModal(false);
+  };
+
   return (
     <div className="space-y-8 animate-float-slow">
       {/* Title */}
-      <div>
-        <h2 className="text-3xl font-black text-white font-display">Client Ledgers</h2>
-        <p className="text-xs text-gray-400 mt-1">Review active clients, account statuses, outstanding invoice balances.</p>
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div>
+          <h2 className="text-3xl font-black text-white font-display">Client Ledgers</h2>
+          <p className="text-xs text-gray-400 mt-1">Review active clients, account statuses, outstanding invoice balances.</p>
+        </div>
+        <button
+          onClick={() => setShowAddModal(true)}
+          className="flex items-center gap-1.5 px-4 py-2.5 rounded-lg bg-primary text-black font-semibold text-xs hover:bg-cyan-400 transition-all shadow-lg shadow-cyan-500/20"
+        >
+          <Plus size={14} />
+          <span>Register Customer</span>
+        </button>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -42,6 +63,7 @@ export default function Customers() {
                   <th className="pb-3 pr-4">Email</th>
                   <th className="pb-3 pr-4">Outstanding</th>
                   <th className="pb-3 pr-4">Last Payment</th>
+                  <th className="pb-3 pr-4 text-center">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/5 text-gray-300">
@@ -55,6 +77,15 @@ export default function Customers() {
                     <td className="py-3.5 pr-4 font-mono">{item.email}</td>
                     <td className="py-3.5 pr-4 font-bold">₹{item.outstanding.toLocaleString()}</td>
                     <td className="py-3.5 pr-4">{item.lastPaymentDate}</td>
+                    <td className="py-3.5 pr-4 text-center">
+                      <button
+                        onClick={(e) => { e.stopPropagation(); deleteCustomer(item.id); }}
+                        className="w-7 h-7 rounded bg-white/5 hover:bg-red-500/10 text-red-400 flex items-center justify-center border border-white/5 mx-auto"
+                        title="Delete customer"
+                      >
+                        <Trash2 size={12} />
+                      </button>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -94,7 +125,7 @@ export default function Customers() {
 
             <div className="border-t border-white/10 pt-4 space-y-2">
               <button 
-                onClick={() => alert(`Email invoice ledger generated for ${selectedCustomer.name}`)}
+                onClick={() => alert(`Invoice ledger dispatched to ${selectedCustomer.email}`)}
                 className="w-full text-center text-xs font-semibold py-2.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-white transition-all"
               >
                 Dispatch Email Ledger
@@ -103,6 +134,60 @@ export default function Customers() {
           </div>
         )}
       </div>
+
+      {/* Add Customer Modal */}
+      {showAddModal && (
+        <div className="fixed inset-0 bg-black/75 flex items-center justify-center p-6 z-50 backdrop-blur-sm">
+          <div className="w-full max-w-md glass-card rounded-2xl border border-white/10 p-6 shadow-2xl relative">
+            <button 
+              onClick={() => setShowAddModal(false)}
+              className="absolute top-4 right-4 text-gray-400 hover:text-white"
+            >
+              <X size={16} />
+            </button>
+
+            <h3 className="text-lg font-black text-white font-display mb-4">Register New Customer</h3>
+
+            <form onSubmit={handleAddCustomer} className="space-y-4">
+              <div>
+                <label className="text-[9px] font-bold text-gray-500 uppercase tracking-wider block mb-1">Customer Name</label>
+                <input 
+                  type="text" 
+                  required
+                  value={newName}
+                  onChange={(e) => setNewName(e.target.value)}
+                  placeholder="e.g. Acme Corp"
+                  className="w-full px-3 py-2 text-xs glass-input"
+                />
+              </div>
+
+              <div>
+                <label className="text-[9px] font-bold text-gray-500 uppercase tracking-wider block mb-1">Email Address</label>
+                <input 
+                  type="email" 
+                  required
+                  value={newEmail}
+                  onChange={(e) => setNewEmail(e.target.value)}
+                  placeholder="e.g. billing@acme.com"
+                  className="w-full px-3 py-2 text-xs glass-input"
+                />
+              </div>
+
+              <p className="text-[10px] text-gray-500 flex items-center gap-1 mt-3">
+                <Mail size={12} />
+                A welcome notification will be sent automatically upon registration.
+              </p>
+
+              <button 
+                type="submit"
+                className="w-full py-3 rounded-xl bg-primary text-black font-bold text-xs hover:bg-cyan-400 transition-all uppercase mt-4"
+              >
+                Register Customer
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

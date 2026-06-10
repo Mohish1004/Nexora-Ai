@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAppStore } from '../../store/appStore';
-import { 
+import {
   LayoutDashboard, 
   Package, 
   Users, 
@@ -15,7 +15,9 @@ import {
   PiggyBank, 
   Target, 
   Receipt,
-  User
+  User,
+  Info,
+  LifeBuoy
 } from 'lucide-react';
 
 export default function Sidebar() {
@@ -93,6 +95,24 @@ export default function Sidebar() {
         })}
       </nav>
 
+      {/* About & Help Links */}
+      <div className="px-4 py-3 space-y-1 border-t border-white/5">
+        <button
+          onClick={() => navigate('/about')}
+          className="group w-full flex items-center gap-3 px-4 py-2 rounded-lg border border-transparent text-gray-400 hover:border-white/10 hover:bg-white/5 hover:text-white text-xs font-medium transition-all duration-300"
+        >
+          <Info size={16} />
+          <span>About</span>
+        </button>
+        <button
+          onClick={() => navigate('/help')}
+          className="group w-full flex items-center gap-3 px-4 py-2 rounded-lg border border-transparent text-gray-400 hover:border-white/10 hover:bg-white/5 hover:text-white text-xs font-medium transition-all duration-300"
+        >
+          <LifeBuoy size={16} />
+          <span>Help</span>
+        </button>
+      </div>
+
       {/* Footer User Profile Summary */}
       <div className="p-4 border-t border-white/10 flex flex-col gap-2 bg-black/10">
         <div className="flex items-center gap-3 px-2 py-1.5">
@@ -100,7 +120,7 @@ export default function Sidebar() {
             <User size={16} className="text-gray-300" />
           </div>
           <div className="flex-1 min-w-0">
-            <h4 className="text-xs font-semibold text-white truncate">{user?.name || 'Director Mode'}</h4>
+            <h4 className="text-xs font-semibold text-white truncate">{user?.name || 'Standard User'}</h4>
             <p className="text-[10px] text-gray-500 truncate">{user?.email || 'admin@nexora.ai'}</p>
           </div>
         </div>
@@ -111,6 +131,24 @@ export default function Sidebar() {
         >
           <Settings size={14} />
           <span>Workspace Settings</span>
+        </button>
+
+        <div className="border-t border-white/5 my-2" />
+
+        <button
+          onClick={() => navigate('/about')}
+          className="w-full flex items-center gap-2 px-3 py-2 text-xs text-gray-400 hover:text-white rounded transition-colors"
+        >
+          <Info size={14} />
+          <span>About</span>
+        </button>
+
+        <button
+          onClick={() => navigate('/help')}
+          className="w-full flex items-center gap-2 px-3 py-2 text-xs text-gray-400 hover:text-white rounded transition-colors"
+        >
+          <LifeBuoy size={14} />
+          <span>Help & FAQs</span>
         </button>
 
         <button

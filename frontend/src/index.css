@@ -20,9 +20,9 @@
   --font-sans: 'Inter', sans-serif;
   --font-display: 'Outfit', sans-serif;
 
-  --animate-float-slow: float 12s ease-in-out infinite;
-  --animate-float-medium: float 10s ease-in-out infinite;
-  --animate-float-fast: float 8s ease-in-out infinite;
+  --animate-float-slow: float 16s ease-in-out infinite;
+  --animate-float-medium: float 14s ease-in-out infinite;
+  --animate-float-fast: float 12s ease-in-out infinite;
 
   @keyframes float {
     0%, 100% { transform: translateY(0); }
@@ -86,10 +86,11 @@
 
 /* Glassmorphism Styles */
 .glass-panel {
-  background: rgba(13, 17, 30, 0.75); /* Darkened slightly for better text contrast */
+  background: rgba(13, 17, 30, 0.75);
   backdrop-filter: blur(30px);
   -webkit-backdrop-filter: blur(30px);
   border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
 }
 
 .glass-card {
@@ -97,7 +98,7 @@
   backdrop-filter: blur(32px);
   -webkit-backdrop-filter: blur(32px);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.05);
   transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -105,13 +106,13 @@
 .theme-business .glass-card:hover {
   transform: translateY(-6px) scale(1.01);
   border-color: rgba(0, 212, 255, 0.3);
-  box-shadow: 0 15px 45px -10px rgba(0, 212, 255, 0.15), 0 0 20px 0 rgba(0, 212, 255, 0.05);
+  box-shadow: 0 15px 45px -10px rgba(0, 212, 255, 0.15), 0 0 20px 0 rgba(0, 212, 255, 0.05), inset 0 1px 0 rgba(0, 212, 255, 0.1);
 }
 
 .theme-personal .glass-card:hover {
   transform: translateY(-6px) scale(1.01);
   border-color: rgba(0, 230, 118, 0.3);
-  box-shadow: 0 15px 45px -10px rgba(0, 230, 118, 0.15), 0 0 20px 0 rgba(0, 230, 118, 0.05);
+  box-shadow: 0 15px 45px -10px rgba(0, 230, 118, 0.15), 0 0 20px 0 rgba(0, 230, 118, 0.05), inset 0 1px 0 rgba(0, 230, 118, 0.1);
 }
 
 .glass-input {
@@ -127,6 +128,33 @@
   background: rgba(0, 0, 0, 0.4);
   border-color: var(--theme-accent, var(--accent-business));
   box-shadow: 0 0 20px rgba(0, 212, 255, 0.1);
+}
+
+/* Landing Page Interactive Hover Effects */
+.landing-hover-btn {
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.landing-hover-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(0, 212, 255, 0.2);
+}
+
+.landing-hover-card {
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.landing-hover-card:hover {
+  transform: translateY(-8px) scale(1.02);
+  border-color: rgba(0, 212, 255, 0.3);
+  box-shadow: 0 20px 60px rgba(0, 212, 255, 0.1);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.landing-nav-link {
+  transition: all 0.3s ease;
+}
+.landing-nav-link:hover {
+  color: white;
+  transform: translateY(-1px);
 }
 
 /* Liquid backgrounds (Vivid Glowing ambient blobs) */
