@@ -163,8 +163,12 @@ export default function AppRoutes() {
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
 
-      {/* Floating AI Panel mounted globally on authenticated screens */}
-      {isAuthenticated && <FloatingPanel />}
+      {/* Floating AI Panel - desktop only (mobile uses MobileBottomNav) */}
+      {isAuthenticated && (
+        <div className="hidden lg:block">
+          <FloatingPanel />
+        </div>
+      )}
     </>
   );
 }
