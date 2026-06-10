@@ -35,6 +35,7 @@ com\nexora\ai\entity\Customer.class
 com\nexora\ai\controller\VendorController.class
 com\nexora\ai\dto\ProfileResponse$ProfileResponseBuilder.class
 com\nexora\ai\dto\TransactionResponse.class
+com\nexora\ai\annotation\PremiumLimit.class
 com\nexora\ai\entity\ReceivablesPayables.class
 com\nexora\ai\dto\ProfileResponse.class
 com\nexora\ai\entity\ReceivablesPayables$ReceivablesPayablesBuilder.class
@@ -53,6 +54,7 @@ com\nexora\ai\controller\AuthController.class
 com\nexora\ai\dto\VendorResponse.class
 com\nexora\ai\dto\ReceivablesPayablesRequest.class
 com\nexora\ai\dto\RegisterRequest.class
+com\nexora\ai\config\CacheConfig.class
 com\nexora\ai\controller\CustomerController.class
 com\nexora\ai\dto\TransactionResponse$TransactionResponseBuilder.class
 com\nexora\ai\service\FinanceService.class
@@ -70,6 +72,7 @@ com\nexora\ai\dto\BusinessDashboardResponse$BusinessDashboardResponseBuilder.cla
 com\nexora\ai\dto\CustomerRequest.class
 com\nexora\ai\dto\PersonalDashboardResponse.class
 com\nexora\ai\dto\ProductRequest.class
+com\nexora\ai\aspect\SubscriptionAspect.class
 com\nexora\ai\repository\CustomerRepository.class
 com\nexora\ai\controller\ProfileController.class
 com\nexora\ai\scheduler\ScheduledTasks.class

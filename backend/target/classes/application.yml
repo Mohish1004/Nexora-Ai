@@ -10,6 +10,17 @@ spring:
   profiles:
     active: dev
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: when_authorized
+      probes:
+        enabled: true
+
 ---
 spring:
   config:

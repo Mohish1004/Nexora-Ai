@@ -39,6 +39,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/h2-console/**").permitAll()
                 .requestMatchers("/api/ws/**").permitAll() // WebSockets
+                .requestMatchers("/actuator/**").permitAll() // Health check
                 .anyRequest().authenticated()
             )
             .sessionManagement(session -> session

@@ -32,4 +32,12 @@ public class ProfileController {
         ProfileResponse response = profileService.updateProfile(principal.getName(), request);
         return ResponseEntity.ok(ApiResponse.success("Profile updated successfully", response));
     }
+
+    @PutMapping("/subscription")
+    public ResponseEntity<ApiResponse<ProfileResponse>> updateSubscription(
+            Principal principal,
+            @RequestParam String planType) {
+        ProfileResponse response = profileService.updateSubscription(principal.getName(), planType);
+        return ResponseEntity.ok(ApiResponse.success("Subscription updated successfully", response));
+    }
 }

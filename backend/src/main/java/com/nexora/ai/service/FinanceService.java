@@ -7,6 +7,8 @@ import com.nexora.ai.entity.Transaction;
 import com.nexora.ai.entity.Workspace;
 import com.nexora.ai.repository.ReceivablesPayablesRepository;
 import com.nexora.ai.repository.TransactionRepository;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -41,6 +43,10 @@ public class FinanceService {
     }
 
     @Transactional
+    @Caching(evict = {
+        @CacheEvict(value = "businessDashboard", key = "#workspaceId"),
+        @CacheEvict(value = "personalDashboard", key = "#workspaceId")
+    })
     public Transaction createTransaction(String email, Long workspaceId, TransactionRequest request) {
         Workspace workspace = verifyAndGetWorkspace(email, workspaceId);
         
@@ -64,6 +70,7 @@ public class FinanceService {
     }
 
     @Transactional
+    @CacheEvict(value = "businessDashboard", key = "#workspaceId")
     public ReceivablesPayables createReceivablesPayables(String email, Long workspaceId, ReceivablesPayablesRequest request) {
         Workspace workspace = verifyAndGetWorkspace(email, workspaceId);
         
@@ -85,6 +92,7 @@ public class FinanceService {
     }
 
     @Transactional
+    @CacheEvict(value = "businessDashboard", key = "#workspaceId")
     public ReceivablesPayables updateStatus(String email, Long workspaceId, Long id, String status) {
         verifyAndGetWorkspace(email, workspaceId);
         ReceivablesPayables record = receivablesPayablesRepository.findByIdAndWorkspaceId(id, workspaceId)

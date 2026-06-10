@@ -7,6 +7,7 @@ import com.nexora.ai.entity.Transaction;
 import com.nexora.ai.repository.ProductRepository;
 import com.nexora.ai.repository.ReceivablesPayablesRepository;
 import com.nexora.ai.repository.TransactionRepository;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -53,6 +54,7 @@ public class DashboardService {
                 .collect(Collectors.toList());
     }
 
+    @Cacheable(value = "businessDashboard", key = "#workspaceId")
     public BusinessDashboardResponse getBusinessDashboard(String email, Long workspaceId) {
         workspaceService.getWorkspaceForUser(email, workspaceId);
 
@@ -89,6 +91,7 @@ public class DashboardService {
                 .build();
     }
 
+    @Cacheable(value = "personalDashboard", key = "#workspaceId")
     public PersonalDashboardResponse getPersonalDashboard(String email, Long workspaceId) {
         workspaceService.getWorkspaceForUser(email, workspaceId);
 

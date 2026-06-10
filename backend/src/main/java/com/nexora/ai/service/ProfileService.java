@@ -60,4 +60,25 @@ public class ProfileService {
                 .planType(savedUser.getPlanType())
                 .build();
     }
+
+    @Transactional
+    public ProfileResponse updateSubscription(String email, String planType) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        
+        String cleanPlan = planType.toUpperCase();
+        if (!"FREE".equals(cleanPlan) && !"PRO".equals(cleanPlan) && !"BUSINESS".equals(cleanPlan)) {
+            throw new IllegalArgumentException("Invalid subscription plan type. Must be FREE, PRO, or BUSINESS.");
+        }
+        
+        user.setPlanType(cleanPlan);
+        User savedUser = userRepository.save(user);
+        
+        return ProfileResponse.builder()
+                .email(savedUser.getEmail())
+                .fullName(savedUser.getFullName())
+                .role(savedUser.getRole())
+                .planType(savedUser.getPlanType())
+                .build();
+    }
 }

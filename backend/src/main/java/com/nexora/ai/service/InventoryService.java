@@ -4,6 +4,7 @@ import com.nexora.ai.dto.ProductRequest;
 import com.nexora.ai.entity.Product;
 import com.nexora.ai.entity.Workspace;
 import com.nexora.ai.repository.ProductRepository;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,6 +38,7 @@ public class InventoryService {
     }
 
     @Transactional
+    @CacheEvict(value = "businessDashboard", key = "#workspaceId")
     public Product createProduct(String email, Long workspaceId, ProductRequest request) {
         Workspace workspace = verifyAndGetWorkspace(email, workspaceId);
         
@@ -55,6 +57,7 @@ public class InventoryService {
     }
 
     @Transactional
+    @CacheEvict(value = "businessDashboard", key = "#workspaceId")
     public Product updateProduct(String email, Long workspaceId, Long productId, ProductRequest request) {
         verifyAndGetWorkspace(email, workspaceId);
         Product product = productRepository.findByIdAndWorkspaceId(productId, workspaceId)
@@ -72,6 +75,7 @@ public class InventoryService {
     }
 
     @Transactional
+    @CacheEvict(value = "businessDashboard", key = "#workspaceId")
     public void deleteProduct(String email, Long workspaceId, Long productId) {
         verifyAndGetWorkspace(email, workspaceId);
         Product product = productRepository.findByIdAndWorkspaceId(productId, workspaceId)

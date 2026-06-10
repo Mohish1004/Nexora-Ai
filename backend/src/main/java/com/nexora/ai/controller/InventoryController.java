@@ -1,5 +1,6 @@
 package com.nexora.ai.controller;
 
+import com.nexora.ai.annotation.PremiumLimit;
 import com.nexora.ai.dto.ApiResponse;
 import com.nexora.ai.dto.ProductRequest;
 import com.nexora.ai.dto.ProductResponse;
@@ -92,6 +93,7 @@ public class InventoryController {
     }
 
     @GetMapping("/valuation")
+    @PremiumLimit("BUSINESS")
     public ResponseEntity<ApiResponse<BigDecimal>> getValuation(
             Principal principal,
             @PathVariable Long workspaceId) {
