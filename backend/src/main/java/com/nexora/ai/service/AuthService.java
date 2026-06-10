@@ -6,6 +6,7 @@ import com.nexora.ai.entity.Workspace;
 import com.nexora.ai.repository.UserRepository;
 import com.nexora.ai.repository.WorkspaceRepository;
 import com.nexora.ai.security.JwtTokenProvider;
+import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
