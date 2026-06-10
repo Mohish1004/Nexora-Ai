@@ -80,13 +80,13 @@ export default function Sidebar() {
             <button
               key={link.name}
               onClick={() => navigate(link.path)}
-              className={`w-full flex items-center gap-3.5 px-4 py-3 rounded-lg border text-sm font-medium transition-all duration-300 ${
+              className={`group w-full flex items-center gap-3.5 px-4 py-3 rounded-lg border text-sm font-medium transition-all duration-300 ${
                 isActive 
                   ? `${activeBgClass} border-l-4` 
-                  : `border-transparent text-gray-400 ${borderHoverClass}`
+                  : `border-transparent text-gray-400 ${borderHoverClass} hover:text-white`
               }`}
             >
-              <Icon size={18} className={isActive ? '' : 'text-gray-500'} />
+              <Icon size={18} className={isActive ? '' : 'text-gray-400 group-hover:text-white transition-colors'} />
               <span>{link.name}</span>
             </button>
           );
