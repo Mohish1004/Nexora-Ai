@@ -4,7 +4,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
 import java.util.List;
 
 @Data
@@ -12,7 +11,7 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public class AnomalyResponse {
-    private List<AnomalyItem> anomalies;
+    private List<AnomalyRecord> anomalies;
     private Double riskScore;
     private String summary;
 
@@ -20,8 +19,8 @@ public class AnomalyResponse {
     @NoArgsConstructor
     @AllArgsConstructor
     @Builder
-    public static class AnomalyItem {
-        private int index;
+    public static class AnomalyRecord {
+        private Integer index;
         private Double amount;
         private String category;
         private String date;

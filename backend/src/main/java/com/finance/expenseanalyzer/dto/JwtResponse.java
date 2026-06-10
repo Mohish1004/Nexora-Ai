@@ -6,14 +6,13 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
 @Builder
 public class JwtResponse {
     private String token;
     private String refreshToken;
-    @Builder.Default
-    private String type = "Bearer";
+    private String type; // e.g. "Bearer"
     private Long id;
     private String name;
     private String email;

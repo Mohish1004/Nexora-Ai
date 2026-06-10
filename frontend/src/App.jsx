@@ -2,34 +2,32 @@ import React, { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Sidebar from './components/Sidebar';
 import Topbar from './components/Topbar';
-import BottomNav from './components/BottomNav';
 import Landing from './pages/Landing';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
+import Invoices from './pages/Invoices';
 import Expenses from './pages/Expenses';
-import BudgetPlanner from './pages/BudgetPlanner';
-import Reports from './pages/Reports';
-import Insights from './pages/Insights';
-import Profile from './pages/Profile';
+import Budgets from './pages/Budgets';
+import Runway from './pages/Runway';
 import CopilotWorkspace from './pages/CopilotWorkspace';
-import Goals from './pages/Goals';
+import Profile from './pages/Profile';
 
 export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [theme, setTheme] = useState('light');
+  const [theme, setTheme] = useState('dark');
   const [userInfo, setUserInfo] = useState({});
 
   useEffect(() => {
-    // Check initial session
+    // Check session
     const token = localStorage.getItem('jwt_token');
     if (token) {
       setIsAuthenticated(true);
       setUserInfo(JSON.parse(localStorage.getItem('user_info') || '{}'));
     }
 
-    // Load custom theme
-    const savedTheme = localStorage.getItem('app_theme') || 'light';
+    // Set dark theme as default for Liquid Glass UI
+    const savedTheme = localStorage.getItem('app_theme') || 'dark';
     setTheme(savedTheme);
     document.documentElement.setAttribute('data-theme', savedTheme);
   }, []);
@@ -61,40 +59,46 @@ export default function App() {
     <>
       <Sidebar onLogout={handleLogout} userInfo={userInfo} />
       <div className="main-content">
-        <Topbar theme={theme} toggleTheme={toggleTheme} />
+        <Topbar theme={theme} toggleTheme={toggleTheme} onLogout={handleLogout} userInfo={userInfo} />
         <main className="content-area">
           {children}
         </main>
-        <BottomNav />
       </div>
     </>
   );
 
   return (
     <BrowserRouter>
+      {/* Background liquid blobs */}
+      <div className="liquid-bg">
+        <div className="liquid-blob liquid-blob-1"></div>
+        <div className="liquid-blob liquid-blob-2"></div>
+        <div className="liquid-blob liquid-blob-3"></div>
+      </div>
+
       <div className="app-container">
         <Routes>
-          {/* Landing page is always at root / */}
+          {/* Landing page */}
           <Route path="/" element={<Landing isAuthenticated={isAuthenticated} />} />
 
-          {/* Auth routes - Redirect to /copilot on success */}
+          {/* Auth routes */}
           <Route 
             path="/login" 
-            element={isAuthenticated ? <Navigate to="/copilot" replace /> : <Login onLoginSuccess={handleLoginSuccess} />} 
+            element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <Login onLoginSuccess={handleLoginSuccess} />} 
           />
           <Route 
             path="/register" 
-            element={isAuthenticated ? <Navigate to="/copilot" replace /> : <Register />} 
+            element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <Register />} 
           />
 
-          {/* Authenticated Dashboard & Feature routes */}
-          <Route 
-            path="/copilot" 
-            element={isAuthenticated ? <Layout><CopilotWorkspace /></Layout> : <Navigate to="/login" replace />} 
-          />
+          {/* Authenticated SME / B2B routes */}
           <Route 
             path="/dashboard" 
             element={isAuthenticated ? <Layout><Dashboard /></Layout> : <Navigate to="/login" replace />} 
+          />
+          <Route 
+            path="/invoices" 
+            element={isAuthenticated ? <Layout><Invoices /></Layout> : <Navigate to="/login" replace />} 
           />
           <Route 
             path="/expenses" 
@@ -102,26 +106,22 @@ export default function App() {
           />
           <Route 
             path="/budget" 
-            element={isAuthenticated ? <Layout><BudgetPlanner /></Layout> : <Navigate to="/login" replace />} 
+            element={isAuthenticated ? <Layout><Budgets /></Layout> : <Navigate to="/login" replace />} 
           />
           <Route 
-            path="/goals" 
-            element={isAuthenticated ? <Layout><Goals /></Layout> : <Navigate to="/login" replace />} 
+            path="/runway" 
+            element={isAuthenticated ? <Layout><Runway /></Layout> : <Navigate to="/login" replace />} 
           />
           <Route 
-            path="/reports" 
-            element={isAuthenticated ? <Layout><Reports /></Layout> : <Navigate to="/login" replace />} 
-          />
-          <Route 
-            path="/insights" 
-            element={isAuthenticated ? <Layout><Insights /></Layout> : <Navigate to="/login" replace />} 
+            path="/copilot" 
+            element={isAuthenticated ? <Layout><CopilotWorkspace /></Layout> : <Navigate to="/login" replace />} 
           />
           <Route 
             path="/profile" 
             element={isAuthenticated ? <Layout><Profile onLogout={handleLogout} onProfileUpdate={handleProfileUpdate} /></Layout> : <Navigate to="/login" replace />} 
           />
 
-          {/* Wildcard redirects back to home/landing */}
+          {/* Fallback */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </div>

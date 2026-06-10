@@ -4,8 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
 import java.util.List;
+import java.util.Map;
 
 @Data
 @NoArgsConstructor
@@ -21,22 +21,11 @@ public class RiskScoreResponse {
     @AllArgsConstructor
     @Builder
     public static class TransactionRisk {
-        private int index;
+        private Integer index;
         private Double amount;
         private String category;
         private String date;
         private Double riskScore;
-        private RiskFactors factors;
-    }
-
-    @Data
-    @NoArgsConstructor
-    @AllArgsConstructor
-    @Builder
-    public static class RiskFactors {
-        private Double anomalyScore;
-        private Double incomeRatioScore;
-        private Double velocityScore;
-        private Double timeScore;
+        private Map<String, Double> factors;
     }
 }

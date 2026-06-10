@@ -90,8 +90,6 @@ export const authApi = {
   login: (data) => apiClient.post('/auth/login', data),
   register: (data) => apiClient.post('/auth/register', data),
   updateProfile: (data) => apiClient.put('/auth/profile', data),
-  loginGoogle: (idToken) => apiClient.post('/auth/google', { idToken }),
-  loginGithub: (code) => apiClient.post('/auth/github', { code }),
   refreshToken: (refreshToken) => apiClient.post('/auth/refreshtoken', { refreshToken }),
   logout: () => apiClient.post('/auth/logout'),
 };
@@ -107,18 +105,17 @@ export const chatApi = {
   restoreSession: (sessionId) => apiClient.post(`/chats/${sessionId}/restore`),
 };
 
+export const invoiceApi = {
+  getAll: () => apiClient.get('/invoices'),
+  create: (data) => apiClient.post('/invoices', data),
+  delete: (id) => apiClient.delete(`/invoices/${id}`),
+};
 
 export const expenseApi = {
   getAll: () => apiClient.get('/expenses'),
   create: (data) => apiClient.post('/expenses', data),
   update: (id, data) => apiClient.put(`/expenses/${id}`, data),
   delete: (id) => apiClient.delete(`/expenses/${id}`),
-};
-
-export const incomeApi = {
-  getAll: () => apiClient.get('/income'),
-  create: (data) => apiClient.post('/income', data),
-  delete: (id) => apiClient.delete(`/income/${id}`),
 };
 
 export const budgetApi = {
@@ -137,7 +134,7 @@ export const goalApi = {
 export const analyticsApi = {
   getMonthly: (months = 6) => apiClient.get(`/analytics/monthly?months=${months}`),
   getCategory: (month = '') => apiClient.get(`/analytics/category${month ? `?month=${month}` : ''}`),
-  getSavings: (month = '') => apiClient.get(`/analytics/savings${month ? `?month=${month}` : ''}`),
+  getRunway: () => apiClient.get('/analytics/runway'),
 };
 
 export const aiApi = {
@@ -167,7 +164,6 @@ export class AiWebSocket {
       this.ws.onopen = () => {
         this.reconnectAttempts = 0;
         this.emit('connected', true);
-        // Auto-ping every 30s
         this.pingInterval = setInterval(() => {
           this.send({ action: 'ping' });
         }, 30000);
@@ -178,7 +174,7 @@ export class AiWebSocket {
           this.emit(msg.type, msg.payload);
           this.emit('message', msg);
         } catch (e) {
-          // ignore parse errors
+          // ignore
         }
       };
       this.ws.onclose = () => {
@@ -190,7 +186,7 @@ export class AiWebSocket {
         this.ws.close();
       };
     } catch (e) {
-      // WS not available
+      // ignore
     }
     return this;
   }

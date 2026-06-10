@@ -4,7 +4,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
 import java.util.List;
 
 @Data
@@ -12,7 +11,7 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public class SegmentResponse {
-    private List<SegmentItem> segments;
+    private List<SegmentCluster> segments;
     private String pattern;
     private String summary;
 
@@ -20,9 +19,9 @@ public class SegmentResponse {
     @NoArgsConstructor
     @AllArgsConstructor
     @Builder
-    public static class SegmentItem {
-        private int cluster;
-        private int transactionCount;
+    public static class SegmentCluster {
+        private Integer cluster;
+        private Integer transactionCount;
         private Double averageAmount;
         private Double totalSpend;
         private String dominantCategory;

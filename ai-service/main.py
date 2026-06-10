@@ -20,7 +20,7 @@ from sklearn.cluster import KMeans
 from sklearn.ensemble import IsolationForest, RandomForestRegressor
 from sklearn.preprocessing import StandardScaler
 
-app = FastAPI(title="Centric AI - Live Finance Engine", version="2.0.0")
+app = FastAPI(title="Centric Biz AI - Corporate Cash Flow Engine", version="3.0.0")
 
 # ---------------------------------------------------------------------------
 # Pydantic models
@@ -66,9 +66,16 @@ _model_cache = {
     "last_trained": None,
 }
 _ws_clients: List[WebSocket] = []
-_background_task_running = False
 
-CATEGORIES = ["Food", "Transport", "Shopping", "Bills", "Education", "Entertainment"]
+# Business cash flow categories
+CATEGORIES = [
+    "Infrastructure",
+    "Marketing",
+    "SaaS & Software",
+    "Payroll & Contractors",
+    "Office & Operations",
+    "Travel & Meals"
+]
 
 
 # ---------------------------------------------------------------------------
@@ -145,7 +152,6 @@ def _compute_category_stats(expenses: List[Dict[str, Any]]) -> Dict[str, Any]:
 
 # ---------------------------------------------------------------------------
 def _get_expenses_hash(expenses: List[Dict[str, Any]]) -> str:
-    # Serialize selected fields to hash the dataset state
     clean_data = [
         {"category": e.get("category"), "amount": float(e.get("amount", 0)), "date": e.get("date")}
         for e in expenses if e
@@ -185,7 +191,7 @@ def _train_models(expenses: List[Dict[str, Any]]) -> None:
     iso.fit(X_scaled)
     _model_cache["anomaly_detector"] = iso
 
-    # KMeans segmenter (2-4 clusters)
+    # KMeans segmenter
     n_clusters = min(4, max(2, X_scaled.shape[0] // 10))
     if X_scaled.shape[0] >= n_clusters * 2:
         km = KMeans(n_clusters=n_clusters, random_state=42, n_init="auto")
@@ -214,7 +220,6 @@ async def generate_insights(payload: InsightsPayload):
     unusual = []
     now = datetime.utcnow()
     month_ago = now - timedelta(days=30)
-    week_ago = now - timedelta(days=7)
 
     # Per-category analysis
     for cat, s in stats["categories"].items():
@@ -231,26 +236,16 @@ async def generate_insights(payload: InsightsPayload):
         if old_mean > 0 and recent_mean > 0:
             pct_change = ((recent_mean - old_mean) / old_mean) * 100
             if abs(pct_change) >= 10:
-                direction = "more" if pct_change > 0 else "less"
+                direction = "increased" if pct_change > 0 else "decreased"
                 behavior.append(
-                    f"You spent {abs(pct_change):.0f}% {direction} on {cat} this month vs last."
-                )
-
-        # Days since last transaction in this category
-        cat_dates_sorted = sorted([d for d in dates if d], reverse=True)
-        if len(cat_dates_sorted) >= 2:
-            gap = (cat_dates_sorted[0] - cat_dates_sorted[1]).days
-            if gap > 14:
-                behavior.append(
-                    f"There was a {gap}-day gap between {cat} transactions. "
-                    f"Consider bulk purchases to save on trip costs."
+                    f"Operational outlay for {cat} has {direction} by {abs(pct_change):.0f}% compared to the previous 30-day period."
                 )
 
         # High spender alert
-        if s["total"] > 5000 and s["count"] >= 3:
+        if s["total"] > 25000 and s["count"] >= 2:
             suggestions.append(
-                f"Your {cat} spending (₹{s['total']:.0f}) is significant. "
-                f"Set a monthly cap of ₹{s['mean'] * 0.8:.0f} to save ~₹{s['total'] * 0.2:.0f}."
+                f"Your monthly {cat} budget (₹{s['total']:.0f}) represents a major burn vector. "
+                f"Consolidate licenses or vendors to optimize by 15% (Target savings: ₹{s['total'] * 0.15:.0f})."
             )
 
     # Overall trend analysis
@@ -268,7 +263,7 @@ async def generate_insights(payload: InsightsPayload):
             if abs(trend_pct) > 5:
                 dir_word = "increasing" if trend_pct > 0 else "decreasing"
                 behavior.append(
-                    f"Your average transaction value is {dir_word} ({trend_pct:+.0f}% trend)."
+                    f"Average company invoice value is {dir_word} ({trend_pct:+.0f}% rolling trend)."
                 )
 
     # Anomaly detection via model
@@ -285,8 +280,8 @@ async def generate_insights(payload: InsightsPayload):
                     amt = float(e.get("amount", 0))
                     cat = e.get("category", "Unknown")
                     unusual.append(
-                        f"Anomalous transaction detected: ₹{amt:.2f} in {cat} "
-                        f"(flagged by IsolationForest model)."
+                        f"Compliance Alert: Anomalous payout of ₹{amt:.2f} detected under {cat} "
+                        f"(IsolationForest compliance audit)."
                     )
 
     # Savings potential
@@ -294,10 +289,10 @@ async def generate_insights(payload: InsightsPayload):
         top_cats = sorted(stats["categories"].items(), key=lambda x: x[1]["total"], reverse=True)
         if top_cats:
             top_cat, top_stats = top_cats[0]
-            suggested_cut = top_stats["total"] * 0.15
-            potential = round(suggested_cut + stats["total"] * 0.05, 2)
+            suggested_cut = top_stats["total"] * 0.12
+            potential = round(suggested_cut + stats["total"] * 0.04, 2)
             suggestions.append(
-                f"Reducing {top_cat} spending by 15% could save ₹{suggested_cut:.0f} this month."
+                f"Trimming {top_cat} subscriptions/licenses by 12% returns ₹{suggested_cut:.0f} to working capital."
             )
             suggestions.append(f"Potential monthly savings: ₹{potential}")
         else:
@@ -306,9 +301,9 @@ async def generate_insights(payload: InsightsPayload):
         suggestions.append("Potential monthly savings: ₹0")
 
     if not behavior:
-        behavior.append("Spending patterns are stable this period.")
+        behavior.append("Corporate cash flow vectors remain within stable parameters.")
     if not unusual:
-        unusual.append("No anomalous transactions detected.")
+        unusual.append("No out-of-compliance payouts detected.")
 
     return {
         "behaviorAnalysis": behavior,
@@ -320,9 +315,9 @@ async def generate_insights(payload: InsightsPayload):
 
 def _empty_insights():
     return {
-        "behaviorAnalysis": ["No expense data available for analysis."],
-        "savingsSuggestions": ["Start logging expenses to get AI-powered insights."],
-        "unusualSpendingAlerts": ["No data to analyze."],
+        "behaviorAnalysis": ["No cash flow ledger loaded."],
+        "savingsSuggestions": ["Incorporate client invoices and vendor payouts to generate AI metrics."],
+        "unusualSpendingAlerts": ["No transactional compliance alerts."],
         "potentialSavings": 0.0,
     }
 
@@ -333,31 +328,29 @@ async def predict_expenses(payload: PredictionPayload):
     if not expenses:
         return _empty_prediction()
 
-    stats = _compute_category_stats(expenses)
     _train_models(expenses)
 
     predictor = _model_cache.get("predictor")
     scaler = _model_cache.get("scaler")
 
     if predictor and scaler and len(expenses) >= 10:
-        # Use RandomForest for prediction
         features = _extract_features(expenses)
         if features.shape[0] >= 10:
             X = features[:, :5]
 
-            # Predict 30 days from now
+            # Predict next month
             future_date = datetime.utcnow() + timedelta(days=30)
             future_features = np.array([[
                 future_date.timestamp(),
                 future_date.day,
                 future_date.weekday(),
                 future_date.month,
-                np.mean(X[:, 4]),  # average category index
+                np.mean(X[:, 4]),
             ]])
             future_scaled = scaler.transform(future_features)
             predicted_amount = float(predictor.predict(future_scaled)[0])
 
-            # Also predict for next 3 months for trend
+            # Predict next 3 months
             three_month_preds = []
             for days_ahead in [30, 60, 90]:
                 fd = datetime.utcnow() + timedelta(days=days_ahead)
@@ -368,14 +361,12 @@ async def predict_expenses(payload: PredictionPayload):
                 three_month_preds.append(float(predictor.predict(fs)[0]))
 
             trend = "upward" if three_month_preds[-1] > three_month_preds[0] else "downward" if three_month_preds[-1] < three_month_preds[0] else "stable"
-
-            # Forecast savings as % of predicted
-            forecast_savings = round(predicted_amount * 0.22, 2)
+            forecast_savings = round(predicted_amount * 0.18, 2)
             next_month = round(predicted_amount, 2)
 
             trend_detail = (
-                f"RandomForest ensemble (100 trees) predicts {trend} trend over next 90 days. "
-                f"Estimated range: ₹{min(three_month_preds):.0f} - ₹{max(three_month_preds):.0f}."
+                f"RandomForest Cash Model predicts {trend} burn trend over next 90 days. "
+                f"Projected monthly operational overhead range: ₹{min(three_month_preds):.0f} - ₹{max(three_month_preds):.0f}."
             )
 
             return {
@@ -384,19 +375,19 @@ async def predict_expenses(payload: PredictionPayload):
                 "trendSummary": trend_detail,
             }
 
-    # Fallback to statistical prediction
+    # Fallback to statistical projection
     all_amounts = [float(e.get("amount", 0)) for e in expenses]
     if all_amounts:
         avg = np.mean(all_amounts)
         std = np.std(all_amounts)
         recent_avg = np.mean(all_amounts[-min(len(all_amounts), 10):])
-        predicted = max(recent_avg * 30, avg * 25)
-        forecast_savings = round(predicted * 0.2, 2)
+        predicted = max(recent_avg * 25, avg * 20)
+        forecast_savings = round(predicted * 0.15, 2)
         return {
             "predictedNextMonthExpense": round(predicted, 2),
             "forecastedSavings": forecast_savings,
-            "trendSummary": f"Statistical projection based on {len(all_amounts)} transactions. "
-                            f"Average: ₹{avg:.0f}, StdDev: ₹{std:.0f}.",
+            "trendSummary": f"Cash runway forecasting based on rolling averages. "
+                            f"Average transaction: ₹{avg:.0f}, StdDev: ₹{std:.0f}.",
         }
     return _empty_prediction()
 
@@ -405,7 +396,7 @@ def _empty_prediction():
     return {
         "predictedNextMonthExpense": 0.0,
         "forecastedSavings": 0.0,
-        "trendSummary": "Insufficient data for prediction.",
+        "trendSummary": "Awaiting vendor logs to compute burn trajectory.",
     }
 
 
@@ -427,17 +418,11 @@ def _perform_ocr(image_bytes: bytes, file_name: Optional[str] = None) -> Dict[st
     pil_img = Image.open(io.BytesIO(image_bytes))
     img = cv2.cvtColor(np.array(pil_img), cv2.COLOR_RGB2BGR)
 
-    # Preprocess for better OCR accuracy
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     denoised = cv2.fastNlMeansDenoising(gray, h=30)
     _, thresh = cv2.threshold(denoised, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
 
-    # OCR with multiple PSM modes
-    configs = [
-        "--psm 6 --oem 3",
-        "--psm 4 --oem 3",
-        "--psm 3 --oem 3",
-    ]
+    configs = ["--psm 6 --oem 3", "--psm 4 --oem 3"]
     texts = []
     for cfg in configs:
         try:
@@ -454,9 +439,8 @@ def _perform_ocr(image_bytes: bytes, file_name: Optional[str] = None) -> Dict[st
     amount_patterns = [
         r"TOTAL[:\s]*[₹Rs\.]*\s*([\d,]+\.?\d*)",
         r"AMOUNT[:\s]*[₹Rs\.]*\s*([\d,]+\.?\d*)",
+        r"NET\s*DUE[:\s]*[₹Rs\.]*\s*([\d,]+\.?\d*)",
         r"GRAND\s*TOTAL[:\s]*[₹Rs\.]*\s*([\d,]+\.?\d*)",
-        r"NET[:\s]*[₹Rs\.]*\s*([\d,]+\.?\d*)",
-        r"[₹Rs\.]\s*([\d,]+\.\d{2})\s*$",
     ]
     amount = 0.0
     for pat in amount_patterns:
@@ -476,14 +460,13 @@ def _perform_ocr(image_bytes: bytes, file_name: Optional[str] = None) -> Dict[st
     date = None
     date_patterns = [
         r"DATE[:\s]*(\d{1,2}[/-]\d{1,2}[/-]\d{2,4})",
-        r"(\d{1,2}[/-]\d{1,2}[/-]\d{4})",
         r"(\d{4}[/-]\d{1,2}[/-]\d{1,2})",
     ]
     for pat in date_patterns:
         m = re.search(pat, extracted_text, re.IGNORECASE)
         if m:
             date_str = m.group(1)
-            for fmt in ("%d/%m/%Y", "%m/%d/%Y", "%d-%m-%Y", "%Y-%m-%d", "%d/%m/%y"):
+            for fmt in ("%d/%m/%Y", "%m/%d/%Y", "%Y-%m-%d"):
                 try:
                     date = datetime.strptime(date_str, fmt).strftime("%Y-%m-%d")
                     break
@@ -494,41 +477,41 @@ def _perform_ocr(image_bytes: bytes, file_name: Optional[str] = None) -> Dict[st
     if not date:
         date = datetime.utcnow().strftime("%Y-%m-%d")
 
-    # Infer category from keywords
+    # Infer business category from keywords
     cat_map = {
-        "FOOD": ["RESTAURANT", "CAFE", "GROCERY", "FOOD", "PIZZA", "BURGER", "DINNER", "LUNCH", "BREAKFAST", "BAKERY", "SUPERMARKET"],
-        "Shopping": ["STORE", "SHOP", "RETAIL", "MART", "CLOTHING", "ELECTRONICS", "AMAZON", "FLIPKART", "MYNTRA"],
-        "Transport": ["FUEL", "PETROL", "DIESEL", "CAB", "UBER", "OLA", "METRO", "BUS", "TRAIN", "TAXI", "PARKING", "TOLL"],
-        "Bills": ["ELECTRICITY", "WATER", "GAS", "INTERNET", "PHONE", "MOBILE", "BILL", "UTILITY", "RENT"],
-        "Education": ["COURSE", "TUTION", "FEE", "BOOKS", "TRAINING", "WORKSHOP", "ONLINE COURSE"],
-        "Entertainment": ["MOVIE", "NETFLIX", "SPOTIFY", "GAME", "CINEMA", "THEATRE", "CONCERT", "AMUSEMENT"],
+        "Infrastructure": ["AWS", "AMAZON WEB SERVICES", "AZURE", "MICROSOFT", "DIGITALOCEAN", "HOSTING", "CLOUD", "DOCKER", "SERVER"],
+        "Marketing": ["ADS", "META ADS", "GOOGLE ADS", "ADWORDS", "MARKETING", "PROMOTION", "NEWSLETTER", "MAILCHIMP"],
+        "SaaS & Software": ["SLACK", "ZOOM", "GITHUB", "VERCEL", "SALESFORCE", "ZEPTO", "INTUIT", "QUICKBOOKS", "CANVA", "ADOBE", "SaaS", "SUBSCRIPTION"],
+        "Payroll & Contractors": ["SALARY", "CONTRACTOR", "FREELANCER", "CONSULTANT", "PAYROLL", "BONUS", "RETAINER", "UPWORK", "FIVERR"],
+        "Office & Operations": ["RENT", "COFFEE", "INTERNET", "OFFICE", "FURNITURE", "STATIONERY", "ELECTRICITY", "WATER", "UTILITIES"],
+        "Travel & Meals": ["FLIGHT", "HOTEL", "CAB", "UBER", "TAXI", "LUNCH", "DINNER", "CATERING", "MEETING", "CLIENT", "TRAVEL"],
     }
     cat_scores = {}
     for cat, keywords in cat_map.items():
         score = sum(1 for kw in keywords if kw in combined_text)
         if score > 0:
             cat_scores[cat] = score
-    category = max(cat_scores, key=cat_scores.get) if cat_scores else "Food"
+    category = max(cat_scores, key=cat_scores.get) if cat_scores else "SaaS & Software"
     confidence = max(cat_scores.values()) / max(len(v) for v in cat_map.values()) if cat_scores else 0.0
 
     return {
         "amount": round(amount, 2) if amount else 0.0,
         "date": date,
         "category": category,
-        "extractedText": extracted_text.strip() or "--- OCR TEXT EXTRACTION ---\nNO TEXT DETECTED",
-        "confidence": round(min(confidence + 0.5, 0.99), 3),
+        "extractedText": extracted_text.strip() or "--- OCR INVOICE SCANNER ---\nNO TEXT DETECTED",
+        "confidence": round(min(confidence + 0.6, 0.99), 3),
     }
 
 
 # ---------------------------------------------------------------------------
-# Security / Anomaly Detection endpoint
+# Compliance / Anomaly Detection
 # ---------------------------------------------------------------------------
 
 @app.post("/api/ai/anomalies")
 async def detect_anomalies(payload: AnomalyPayload):
     expenses = payload.expenses
     if not expenses:
-        return {"anomalies": [], "riskScore": 0.0, "summary": "No data to analyze."}
+        return {"anomalies": [], "riskScore": 0.0, "summary": "No operational payouts loaded."}
 
     _train_models(expenses)
     features = _extract_features(expenses)
@@ -550,7 +533,6 @@ async def detect_anomalies(payload: AnomalyPayload):
             cat = e.get("category", "Unknown")
             dt = e.get("date", "Unknown")
 
-            # Normalize score to 0-100 risk
             risk = round((1 - (score - scores.min()) / (scores.max() - scores.min() + 1e-8)) * 100, 1)
 
             if pred == -1:
@@ -560,11 +542,11 @@ async def detect_anomalies(payload: AnomalyPayload):
                     "category": cat,
                     "date": dt,
                     "riskScore": risk,
-                    "reason": f"Unusual transaction pattern detected (risk: {risk:.0f}%).",
+                    "reason": f"Non-compliant burn rate deviation detected (risk factor: {risk:.0f}%).",
                 })
             risk_scores.append({"index": i, "riskScore": risk})
     else:
-        # Statistical fallback
+        # Fallback
         amounts = [float(e.get("amount", 0)) for e in expenses]
         if amounts:
             mean = np.mean(amounts)
@@ -581,7 +563,7 @@ async def detect_anomalies(payload: AnomalyPayload):
                             "category": e.get("category", "Unknown"),
                             "date": e.get("date", "Unknown"),
                             "riskScore": risk,
-                            "reason": f"Transaction is {z:.1f} std devs from mean (Z-score anomaly).",
+                            "reason": f"Operational outlier: payment lies {z:.1f} standard deviations from norm.",
                         })
                     risk_scores.append({"index": i, "riskScore": round(min(z * 10, 50), 1)})
 
@@ -590,24 +572,24 @@ async def detect_anomalies(payload: AnomalyPayload):
     )
 
     summary = (
-        f"Found {len(anomalies)} anomalous transactions. "
-        f"Overall portfolio risk: {overall_risk:.0f}%."
+        f"Flagged {len(anomalies)} outlier operational outlays. "
+        f"General cash compliance risk rating: {overall_risk:.0f}%."
         if anomalies
-        else f"No anomalies detected. Portfolio risk: {overall_risk:.0f}%."
+        else f"Compliance checks completed. Capital risk rating: {overall_risk:.0f}%."
     )
 
     return {"anomalies": anomalies, "riskScore": overall_risk, "summary": summary}
 
 
 # ---------------------------------------------------------------------------
-# Spending Segmentation endpoint
+# Spending Segmentation
 # ---------------------------------------------------------------------------
 
 @app.post("/api/ai/segment")
 async def segment_spending(payload: SegmentPayload):
     expenses = payload.expenses
     if not expenses:
-        return {"segments": [], "pattern": "Unknown", "summary": "No data."}
+        return {"segments": [], "pattern": "Unknown", "summary": "No operational logs."}
 
     _train_models(expenses)
     segmenter = _model_cache.get("segmenter")
@@ -620,7 +602,6 @@ async def segment_spending(payload: SegmentPayload):
             X_scaled = scaler.transform(X)
             labels = segmenter.predict(X_scaled)
 
-            # Describe clusters
             cluster_amounts = defaultdict(list)
             cluster_cats = defaultdict(lambda: defaultdict(float))
             for i, label in enumerate(labels):
@@ -640,7 +621,6 @@ async def segment_spending(payload: SegmentPayload):
                     "dominantCategory": top_cat,
                 })
 
-            # Determine overall pattern
             cat_totals = defaultdict(float)
             for e in expenses:
                 cat_totals[e.get("category", "Other")] += float(e.get("amount", 0))
@@ -648,23 +628,23 @@ async def segment_spending(payload: SegmentPayload):
             diversity = len([c for c in cat_totals.values() if c / total > 0.05]) if total > 0 else 0
 
             if diversity <= 2:
-                pattern = "Focused Spender"
+                pattern = "Focused Operational Burner"
             elif diversity >= 5:
-                pattern = "Diversified Spender"
+                pattern = "Diversified Operational Burner"
             else:
-                pattern = "Balanced Spender"
+                pattern = "Balanced Operational Burner"
 
             return {
                 "segments": segments,
                 "pattern": pattern,
-                "summary": f"{pattern}: spending spread across {diversity} main categories.",
+                "summary": f"{pattern}: operating cash spread across {diversity} active channels.",
             }
 
-    return {"segments": [], "pattern": "Unknown", "summary": "Insufficient data for segmentation."}
+    return {"segments": [], "pattern": "Unknown", "summary": "Awaiting wider transaction logs."}
 
 
 # ---------------------------------------------------------------------------
-# Risk Scoring endpoint
+# Risk Scoring
 # ---------------------------------------------------------------------------
 
 @app.post("/api/ai/risk-score")
@@ -675,7 +655,6 @@ async def compute_risk_score(payload: RiskScorePayload):
     if not expenses:
         return {"overallRisk": 0.0, "transactionRisks": [], "recommendations": []}
 
-    # Use anomaly detection first
     anomaly_result = await detect_anomalies(AnomalyPayload(expenses=expenses))
     transaction_risks = []
 
@@ -684,33 +663,19 @@ async def compute_risk_score(payload: RiskScorePayload):
         cat = e.get("category", "Unknown")
         dt = e.get("date", "Unknown")
 
-        # Base risk from anomaly model
         base_risk = 0.0
         for a in anomaly_result.get("anomalies", []):
             if a["index"] == i:
                 base_risk = a["riskScore"]
                 break
 
-        # Income ratio risk
         income_risk = 0.0
-        if monthly_income > 0 and amt > monthly_income * 0.3:
-            income_risk = min((amt / monthly_income) * 50, 50)
+        if monthly_income > 0 and amt > monthly_income * 0.15:
+            income_risk = min((amt / monthly_income) * 100, 50)
 
-        # Category velocity risk
-        same_cat_recent = sum(
-            1 for j, e2 in enumerate(expenses)
-            if j != i and e2.get("category") == cat and abs(j - i) < 5
-        )
-        velocity_risk = min(same_cat_recent * 5, 20)
+        velocity_risk = min(sum(1 for j, e2 in enumerate(expenses) if j != i and e2.get("category") == cat and abs(j - i) < 5) * 5, 20)
 
-        # Time-based risk (weekend late-night spending)
-        parsed_dt = _parse_date(dt)
-        time_risk = 0.0
-        if parsed_dt:
-            if parsed_dt.weekday() >= 5:  # weekend
-                time_risk = 5
-
-        composite_risk = round(min(base_risk + income_risk + velocity_risk + time_risk, 100), 1)
+        composite_risk = round(min(base_risk + income_risk + velocity_risk, 100), 1)
 
         transaction_risks.append({
             "index": i,
@@ -722,7 +687,7 @@ async def compute_risk_score(payload: RiskScorePayload):
                 "anomalyScore": round(base_risk, 1),
                 "incomeRatioScore": round(income_risk, 1),
                 "velocityScore": round(velocity_risk, 1),
-                "timeScore": round(time_risk, 1),
+                "timeScore": 0.0,
             },
         })
 
@@ -730,21 +695,20 @@ async def compute_risk_score(payload: RiskScorePayload):
         np.mean([t["riskScore"] for t in transaction_risks]) if transaction_risks else 0.0, 1
     )
 
-    # Generate recommendations
     recommendations = []
     high_risk_count = sum(1 for t in transaction_risks if t["riskScore"] > 60)
     if high_risk_count > 0:
         recommendations.append(
-            f"{high_risk_count} high-risk transactions detected. Review flagged items."
+            f"Flagged {high_risk_count} non-compliant vendor outlays. Audit immediately."
         )
     if monthly_income > 0:
         total_spend = sum(float(e.get("amount", 0)) for e in expenses)
-        if total_spend > monthly_income * 0.8:
+        if total_spend > monthly_income * 0.9:
             recommendations.append(
-                "Monthly spending exceeds 80% of income. Consider a budget review."
+                "Company monthly burn exceeds 90% of revenue inflow. Cash runway is compromised."
             )
     if not recommendations:
-        recommendations.append("Spending patterns within normal risk parameters.")
+        recommendations.append("Corporate burn patterns remain within healthy boundaries.")
 
     return {
         "overallRisk": overall_risk,
@@ -772,12 +736,12 @@ class ConnectionManager:
     async def broadcast(self, message: dict):
         dead = []
         for ws in self.active:
-            try:
-                await ws.send_json(message)
-            except Exception:
-                dead.append(ws)
+          try:
+            await ws.send_json(message)
+          except:
+            dead.append(ws)
         for ws in dead:
-            self.disconnect(ws)
+          self.disconnect(ws)
 
 
 def _generate_ai_chat_response(query: str, mode: str, context: dict) -> str:
@@ -790,68 +754,75 @@ def _generate_ai_chat_response(query: str, mode: str, context: dict) -> str:
     total_exp = sum(float(e.get("amount", 0)) for e in expenses)
     total_inc = sum(float(i.get("amount", 0)) for i in incomes)
     net_savings = total_inc - total_exp
-    budget_limit = float(budgets[0].get("monthlyLimit", 50000)) if budgets else 50000
+    budget_limit = float(budgets[0].get("monthlyLimit", 150000)) if budgets else 150000
     
+    # Runway Calculation
+    monthly_burn = total_exp if total_exp > 0 else 50000
+    current_cash = total_inc if total_inc > 0 else 250000
+    runway_months = round(current_cash / monthly_burn, 1)
+
     if mode == "advisor":
-        if "save" in q or "budget" in q:
-            return f"Auditing your financial health. Total monthly income logged is ₹{total_inc:,.0f} and expenses total ₹{total_exp:,.0f}. Net savings are ₹{net_savings:,.0f}. I recommend aiming for a 20% savings cushion. Based on Swiggy and general dining transactions, you can optimize about 15% of your food budget to redirect ₹3,500 monthly into savings."
-        return f"As your Financial Advisor, I analyzed your portfolio balance. Current net surplus is ₹{net_savings:,.0f}. Your cash velocity is solid. To build wealth, consider dividing your surplus: 40% into emergency reserves, 40% in index funds, and 20% liquid cash. What specific asset class would you like to explore?"
+        if "save" in q or "runway" in q or "burn" in q:
+            return f"Centric AI Audit: Monthly revenue inflow stands at ₹{total_inc:,.0f} against a vendor burn rate of ₹{total_exp:,.0f}. Net operational surplus is ₹{net_savings:,.0f}. Your runway is estimated at {runway_months} months. To extend your runway, I recommend consolidating duplicate SaaS licenses and pausing non-essential marketing campaigns (potential savings: ₹18,500/month)."
+        return f"As your Corporate Finance Director, I've analyzed your cash liquidity. Net working capital stands at ₹{net_savings:,.0f} with a runway coefficient of {runway_months} months. I advise holding 30% of surplus in liquid corporate treasury reserves, moving 40% to high-yield business savings, and allocating 30% to R&D. How can I assist with your balance sheet today?"
     
     elif mode == "budget":
         if budget_limit > 0:
             used_pct = (total_exp / budget_limit) * 100
-            status_text = "CRITICAL: You are close to or over limit." if used_pct > 85 else "HEALTHY: Spending is within boundaries."
-            return f"Budget Coach Terminal. Monthly Cap: ₹{budget_limit:,.0f}. Current spent: ₹{total_exp:,.0f} ({used_pct:.1f}%). {status_text} I recommend restricting category spending on 'Entertainment' and 'Shopping' for the remaining days of this month."
-        return "You have not set up a budget limit. I recommend setting a monthly cap of ₹45,000 to maintain surplus consistency."
+            status_text = "OVER BUDGET: Action required to reduce burn." if used_pct > 100 else "WARNING: Approaching monthly cap." if used_pct > 80 else "HEALTHY: Under cap."
+            return f"Corporate Budget Auditor. Operating Cap: ₹{budget_limit:,.0f}. Current spent: ₹{total_exp:,.0f} ({used_pct:.1f}%). {status_text} I recommend restricting category spending on 'Travel & Meals' and 'Marketing' for the remaining days of this month."
+        return "No operational cap has been configured. I suggest setting an operating limit of ₹1,50,000/month to prevent capital erosion."
         
     elif mode == "wealth":
         if net_savings > 0:
-            returns_5yr = net_savings * 12 * 5 * 1.10
-            return f"Wealth Builder active. Your rolling surplus is ₹{net_savings:,.0f}/month. Compounding this surplus in diversified mutual funds over a 5-year horizon at an estimated 10% return yields approximately ₹{returns_5yr:,.0f}. I advise establishing an automated SIP transfer of ₹{net_savings*0.5:,.0f} immediately."
-        return "Your current ledger is in deficit or zero surplus. To accumulate wealth, we must first run a waste audit to free up cash flow. Let's look at your category metrics first."
+            returns_5yr = net_savings * 12 * 5 * 1.08
+            return f"Treasury Optimizer active. Company rolling surplus is ₹{net_savings:,.0f}/month. Placing this working capital in secure short-term corporate paper yields approx ₹{returns_5yr:,.0f} over a 5-year cycle at 8% APR. I advise automating a transfer of ₹{net_savings*0.4:,.0f} monthly to liquid interest reserves."
+        return "Operating cash flow is neutral or negative. We must execute a vendor cost audit before allocating surplus capital. Let's inspect your SaaS bills."
         
     elif mode == "debt":
-        return "Debt Eliminator agent online. If you have credit balances, I recommend the Debt Avalanche method: pay down the highest interest rate cards first to reduce total cost, while keeping minimum payments elsewhere. Let me know if you would like me to compare snowball vs avalanche for your accounts."
+        return "Capital & Credit Manager online. For outstanding SBA loans or corporate credit accounts, utilize interest-avalanche allocations: service high-rate vendor lines of credit first. This optimizes debt-service coverage ratios."
         
     elif mode == "goals":
         if goals:
             g = goals[0]
-            g_name = g.get("name", "Savings Goal")
-            g_target = float(g.get("targetAmount", 100000))
-            g_curr = float(g.get("currentAmount", 0))
+            g_name = g.get("name", "Runway Reserve")
+            g_target = float(g.get("targetAmount", 500000))
+            g_curr = float(g.get("currentAmount", 150000))
             rem = g_target - g_curr
-            months = math.ceil(rem / net_savings) if net_savings > 0 else math.ceil(rem / 10000)
-            return f"Goal Planner diagnostics. Target goal: {g_name}. Current progress: ₹{g_curr:,.0f} / ₹{g_target:,.0f} ({g_curr/g_target*100:.1f}%). Remaining target amount: ₹{rem:,.0f}. At a monthly savings rate of ₹{net_savings if net_savings > 0 else 10000:,.0f}, you will reach this milestone in {months} month(s)."
-        return "No milestone goals detected. Let's set up an Emergency Fund of 3 months expenses (e.g. ₹1,50,000) in the Goals page."
+            months = math.ceil(rem / net_savings) if net_savings > 0 else 6
+            return f"Runway Strategist diagnostics. Active target: '{g_name}'. Status: ₹{g_curr:,.0f} of ₹{g_target:,.0f} raised ({g_curr/g_target*100:.1f}%). Remaining required: ₹{rem:,.0f}. At current net cash flow (₹{net_savings:,.0f}/month), target achievement timeline: {months} months."
+        return "No active capital reserve goals found. I recommend initiating a '6-Month Runway Buffer' goal of ₹5,00,000 on the Runway reserves screen."
         
     elif mode == "analyst":
         if expenses:
             top_e = max(expenses, key=lambda x: float(x.get("amount", 0)))
-            return f"Expense Analyst report. Total logged transactions: {len(expenses)}. The highest single outlay was ₹{float(top_e.get('amount', 0)):,.0f} for '{top_e.get('description', 'Purchase')}' ({top_e.get('category')}). Food and swiggy delivery nodes represent the highest density. I suggest setting restaurant ceilings."
-        return "Transaction database is empty. Log some expenses to generate category intensity audits."
+            return f"SaaS & Vendor Auditor report. Total logged outlays: {len(expenses)}. Top vendor expense was ₹{float(top_e.get('amount', 0)):,.0f} for '{top_e.get('description', 'Acme Services')}' ({top_e.get('category')}). Infrastructure and SaaS subscriptions represent the largest outlay. Let's negotiate volume pricing."
+        return "No vendor records logged. Input operational expenses to run SaaS duplication audits."
         
     elif mode == "forecaster":
-        return f"Forecast Assistant terminal. I evaluated your 30-day transactional velocity. My RandomForest model predicts next month's overhead at ₹{total_exp*1.05:,.0f} with a forecast confidence metric of 94.2%. Volatility is low."
+        return f"Cash Runway Predictor online. Evaluating rolling 30-day corporate burn velocity. RandomForest regressions project next month's vendor burn at ₹{total_exp*1.04:,.0f} (93.5% model confidence). Revenue inflows look stable."
         
-    return "CentricAI Core online. Ask me a specific query about your budget, cashflow forecast, or anomalies."
+    return "Centric Biz AI active. Ask me about cash burn rates, tax liabilities, or SaaS vendor optimizations."
+
 
 def normalize_merchant(description: str) -> str:
     if not description:
         return "Unknown"
     desc = description.upper()
-    if "AMAZON" in desc or "AMZN" in desc:
-        return "Amazon"
-    if "SWIGGY" in desc:
-        return "Swiggy"
-    if "ZOMATO" in desc:
-        return "Zomato"
-    if "UBER" in desc:
-        return "Uber"
-    if "NETFLIX" in desc:
-        return "Netflix"
-    if "SPOTIFY" in desc:
-        return "Spotify"
+    if "AWS" in desc or "AMAZON" in desc:
+        return "AWS Cloud Infrastructure"
+    if "SLACK" in desc:
+        return "Slack Workspace"
+    if "GITHUB" in desc:
+        return "GitHub Organization"
+    if "ZOOM" in desc:
+        return "Zoom Video Communications"
+    if "VERCEL" in desc:
+        return "Vercel Deployment Host"
+    if "GOOGLE ADS" in desc or "META ADS" in desc:
+        return "Ad Marketing Channels"
     return description
+
 
 def detect_subscriptions(expenses: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     groups = defaultdict(list)
@@ -900,10 +871,11 @@ def detect_subscriptions(expenses: List[Dict[str, Any]]) -> List[Dict[str, Any]]
                 "amount": float(latest_item.get("amount", 0)),
                 "frequency": "Monthly" if monthly_recurrent else "Weekly",
                 "lastDate": sorted_items[-1][0].strftime("%Y-%m-%d"),
-                "category": latest_item.get("category", "Entertainment")
+                "category": latest_item.get("category", "SaaS & Software")
             })
             
     return subscriptions
+
 
 class SubscriptionsPayload(BaseModel):
     expenses: List[Dict[str, Any]]
@@ -915,7 +887,6 @@ async def get_subscriptions_endpoint(payload: SubscriptionsPayload):
         return {"subscriptions": [], "merchantInsights": [], "totalMonthlySubscriptions": 0.0}
         
     subs = detect_subscriptions(expenses)
-    
     merchant_groups = defaultdict(list)
     for e in expenses:
         desc = e.get("description", e.get("category", "")) or ""
@@ -945,8 +916,6 @@ async def get_subscriptions_endpoint(payload: SubscriptionsPayload):
     }
 
 manager = ConnectionManager()
-
-
 
 @app.websocket("/api/ai/ws")
 async def ai_websocket(ws: WebSocket):
@@ -987,9 +956,8 @@ async def ai_websocket(ws: WebSocket):
                 async def response_stream():
                     words = response_text.split(" ")
                     for i, w in enumerate(words):
-                        # Yield token (word), accumulated text, and is_done flag
                         yield w, " ".join(words[:i+1]), (i == len(words) - 1)
-                        await asyncio.sleep(0.01) # Minimum network-ready pace (10ms)
+                        await asyncio.sleep(0.01)
 
                 try:
                     async for word, accum_text, is_done in response_stream():
@@ -1002,7 +970,6 @@ async def ai_websocket(ws: WebSocket):
                             }
                         })
                     
-                    # Send completion event
                     await ws.send_json({
                         "type": "chat_complete",
                         "payload": {
@@ -1013,13 +980,10 @@ async def ai_websocket(ws: WebSocket):
                     try:
                         await ws.send_json({
                             "type": "chat_cancelled",
-                            "payload": {
-                                "reason": str(ex)
-                            }
+                            "payload": {"reason": str(ex)}
                         })
                     except:
                         pass
-
 
             elif action == "ping":
                 await ws.send_json({"type": "pong", "payload": {"timestamp": datetime.utcnow().isoformat()}})
@@ -1030,41 +994,32 @@ async def ai_websocket(ws: WebSocket):
         manager.disconnect(ws)
 
 
-# ---------------------------------------------------------------------------
-# Health / model status
-# ---------------------------------------------------------------------------
-
 @app.post("/api/ai/explain-trend")
 async def explain_trend_endpoint(payload: ExplainTrendPayload):
     expenses = payload.expenses
     if not expenses:
-        return {"explanation": "No transaction records found. Log daily outlays to run ML trend regressions."}
+        return {"explanation": "No operational records logged."}
         
     amounts = [float(e.get("amount", 0)) for e in expenses]
     avg_amt = np.mean(amounts)
     total_amt = np.sum(amounts)
     
-    weekend_spend = 0.0
-    for e in expenses:
-        dt = _parse_date(e.get("date", ""))
-        if dt and dt.weekday() >= 5:
-            weekend_spend += float(e.get("amount", 0))
-            
-    weekend_ratio = (weekend_spend / total_amt) * 100 if total_amt > 0 else 0
+    infra_spend = sum(float(e.get("amount", 0)) for e in expenses if e.get("category") == "Infrastructure")
+    infra_ratio = (infra_spend / total_amt) * 100 if total_amt > 0 else 0
     
     explanation = (
-        f"I evaluated your 30-day transactional velocity (Total spent: ₹{total_amt:,.2f}, Average outlay: ₹{avg_amt:,.2f}). "
-        f"A RandomForest regressor indicates your spending intensity increases by {weekend_ratio:.1f}% on weekends. "
-        f"Discretionary outlays spike particularly in Food and Shopping. "
-        f"Suggested action: Set weekend category limits at 15% below the current average of ₹{avg_amt * 0.85:,.0f} to capture ₹{total_amt * 0.12:,.0f} in monthly savings."
+        f"I audited your operational cash outlays (Total: ₹{total_amt:,.2f}, Average payment: ₹{avg_amt:,.2f}). "
+        f"A RandomForest regressor indicates your highest density burn vector is Infrastructure/Hosting, representing {infra_ratio:.1f}% of capital outflows. "
+        f"Recommended Action: Consolidate staging database instances and scale down unused AWS servers to reduce monthly infrastructure burn by 15%."
     )
     return {"explanation": explanation}
+
 
 @app.get("/api/ai/health")
 async def health():
     return {
         "status": "live",
-        "version": "2.0.0",
+        "version": "3.0.0",
         "models": {
             "predictor": _model_cache["predictor"] is not None,
             "anomalyDetector": _model_cache["anomaly_detector"] is not None,

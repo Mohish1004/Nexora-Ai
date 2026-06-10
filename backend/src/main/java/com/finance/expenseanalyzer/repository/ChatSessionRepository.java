@@ -7,6 +7,6 @@ import java.util.List;
 
 @Repository
 public interface ChatSessionRepository extends JpaRepository<ChatSession, Long> {
-    List<ChatSession> findByUserIdAndDeletedFalseOrderByUpdatedAtDesc(Long userId);
-    List<ChatSession> findByUserIdAndDeletedTrueOrderByUpdatedAtDesc(Long userId);
+    List<ChatSession> findByUserIdAndDeletedFalseOrderByCreatedAtDesc(Long userId);
+    List<ChatSession> findByUserIdAndDeletedTrueOrderByCreatedAtDesc(Long userId);
 }

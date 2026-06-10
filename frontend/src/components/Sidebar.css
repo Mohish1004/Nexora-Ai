@@ -1,59 +1,41 @@
 .app-sidebar {
   width: 280px;
-  height: 100vh;
-  position: sticky;
-  top: 0;
+  height: calc(100vh - 32px);
+  margin: 16px 0 16px 16px;
   display: flex;
   flex-direction: column;
-  border-radius: 0;
-  border-top: none;
-  border-bottom: none;
-  border-left: none;
-  z-index: 40;
-  padding: 24px 20px;
-  background: var(--bg-glass-strong);
-  -webkit-backdrop-filter: var(--glass-blur);
-  backdrop-filter: var(--glass-blur);
-  border-right: 1px solid hsl(var(--border-color));
-  box-shadow: 4px 0 24px rgba(0, 0, 0, 0.03);
+  padding: 24px;
+  border-radius: var(--radius-xl);
+  flex-shrink: 0;
+  z-index: 10;
 }
 
 .sidebar-brand {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 12px;
   margin-bottom: 32px;
-  padding: 0 8px;
 }
 
 .brand-logo {
-  width: 44px;
-  height: 44px;
+  width: 40px;
+  height: 40px;
   border-radius: var(--radius-md);
-  background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent)));
   display: flex;
   align-items: center;
   justify-content: center;
-  color: white;
-  box-shadow: 0 4px 12px hsla(var(--primary), 0.3);
-  flex-shrink: 0;
+  box-shadow: 0 0 20px rgba(139, 92, 246, 0.25);
 }
 
 .brand-text h2 {
-  font-size: 1.35rem;
-  font-weight: 800;
-  line-height: 1.1;
-  letter-spacing: -0.03em;
-}
-
-.brand-text h2 span {
-  color: hsl(var(--primary));
+  font-size: 1.25rem;
+  line-height: 1.2;
 }
 
 .brand-tag {
   font-size: 0.7rem;
+  color: var(--text-muted);
   font-weight: 600;
-  color: hsl(var(--text-muted));
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
@@ -62,193 +44,112 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 12px;
-  background: var(--bg-glass);
-  -webkit-backdrop-filter: var(--glass-blur-sm);
-  backdrop-filter: var(--glass-blur-sm);
+  padding: 14px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.03);
   border-radius: var(--radius-md);
-  border: 1px solid hsl(var(--border-color));
-  margin-bottom: 32px;
+  margin-bottom: 28px;
 }
 
 .user-avatar {
-  width: 38px;
-  height: 38px;
-  border-radius: var(--radius-full);
-  background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent)));
-  color: white;
-  font-weight: 700;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.1rem;
+  font-weight: 700;
+  font-size: 0.95rem;
   flex-shrink: 0;
-  box-shadow: 0 2px 8px hsla(var(--primary), 0.2);
-}
-
-.user-details {
-  overflow: hidden;
 }
 
 .user-details h4 {
-  font-size: 0.88rem;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  overflow: hidden;
-  margin-bottom: 2px;
+  font-size: 0.85rem;
+  font-weight: 600;
 }
 
 .user-email {
   font-size: 0.75rem;
-  color: hsl(var(--text-muted));
+  color: var(--text-muted);
   display: block;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  overflow: hidden;
 }
 
 .sidebar-nav {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
   flex: 1;
 }
 
 .nav-section-title {
   font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.3);
   font-weight: 700;
-  color: hsl(var(--text-muted));
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  padding: 0 12px;
+  letter-spacing: 0.1em;
   margin-bottom: 8px;
-  margin-top: 4px;
+  display: block;
 }
 
 .nav-link {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 12px 14px;
+  padding: 12px 16px;
   border-radius: var(--radius-md);
-  color: hsl(var(--text-muted));
+  color: var(--text-muted);
+  font-size: 0.88rem;
+  font-weight: 500;
   text-decoration: none;
-  font-weight: 600;
-  font-size: 0.92rem;
-  transition: all 0.2s ease;
-  position: relative;
-}
-
-.nav-icon {
-  transition: transform 0.2s ease;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  border: 1px solid transparent;
 }
 
 .nav-link:hover {
-  color: hsl(var(--text-main));
-  background: var(--bg-glass);
-  -webkit-backdrop-filter: var(--glass-blur-sm);
-  backdrop-filter: var(--glass-blur-sm);
-}
-
-.nav-link:hover .nav-icon {
-  transform: scale(1.1);
-  color: hsl(var(--primary));
+  background: rgba(255, 255, 255, 0.03);
+  color: white;
 }
 
 .nav-link.active {
+  background: rgba(139, 92, 246, 0.08);
+  border-color: rgba(139, 92, 246, 0.15);
   color: white;
-  background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent)));
-  box-shadow: 0 4px 12px hsla(var(--primary), 0.25);
+  box-shadow: 0 0 20px rgba(139, 92, 246, 0.03);
 }
 
 .nav-link.active .nav-icon {
-  color: white;
-}
-
-.nav-link.active::after {
-  content: '';
-  position: absolute;
-  right: -20px;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 3px;
-  height: 24px;
-  background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent)));
-  border-radius: var(--radius-full);
+  color: hsl(var(--primary));
+  filter: drop-shadow(0 0 8px rgba(139, 92, 246, 0.5));
 }
 
 .nav-badge {
   margin-left: auto;
   font-size: 0.65rem;
-  font-weight: 800;
-  background: hsl(var(--primary-light));
-  color: hsl(var(--primary));
   padding: 2px 6px;
   border-radius: 4px;
-  box-shadow: var(--shadow-sm);
-}
-
-[data-theme="dark"] .nav-badge {
-  background: hsl(var(--bg-base));
-  color: hsl(var(--primary));
+  font-weight: 600;
+  letter-spacing: 0.02em;
 }
 
 .sidebar-footer {
-  padding-top: 16px;
-  border-top: 1px solid hsl(var(--border-color));
+  margin-top: auto;
 }
 
 .btn-logout {
   width: 100%;
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 12px 14px;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: var(--radius-md);
   background: transparent;
   border: none;
-  color: hsl(var(--danger));
-  font-weight: 600;
-  font-size: 0.92rem;
   cursor: pointer;
-  border-radius: var(--radius-md);
+  font-family: var(--font-primary);
+  font-size: 0.88rem;
+  font-weight: 500;
   transition: all 0.2s ease;
 }
 
 .btn-logout:hover {
-  background: hsl(var(--danger-bg));
-  color: hsl(var(--danger));
-}
-
-@media (max-width: 768px) {
-  .app-sidebar {
-    width: 76px;
-    padding: 20px 12px;
-  }
-
-  .brand-text, .user-details, .nav-link span:not(.nav-badge), .nav-section-title, .btn-logout span {
-    display: none;
-  }
-
-  .nav-link.active::after {
-    display: none;
-  }
-
-  .nav-badge {
-    position: absolute;
-    top: 4px;
-    right: 4px;
-    font-size: 0.5rem;
-    padding: 1px 3px;
-  }
-
-  .nav-link {
-    justify-content: center;
-    padding: 14px;
-    position: relative;
-  }
-
-  .btn-logout {
-    justify-content: center;
-    padding: 14px;
-  }
+  background: rgba(239, 68, 68, 0.08);
 }

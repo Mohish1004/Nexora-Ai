@@ -1,11 +1,11 @@
 package com.finance.expenseanalyzer.service;
 
 import com.finance.expenseanalyzer.dto.*;
-import com.finance.expenseanalyzer.model.Expense;
-import com.finance.expenseanalyzer.model.Income;
+import com.finance.expenseanalyzer.model.VendorExpense;
+import com.finance.expenseanalyzer.model.RevenueInvoice;
 import com.finance.expenseanalyzer.model.User;
-import com.finance.expenseanalyzer.repository.ExpenseRepository;
-import com.finance.expenseanalyzer.repository.IncomeRepository;
+import com.finance.expenseanalyzer.repository.VendorExpenseRepository;
+import com.finance.expenseanalyzer.repository.RevenueInvoiceRepository;
 import com.finance.expenseanalyzer.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -29,8 +29,8 @@ import java.util.stream.Collectors;
 public class AiIntegrationService {
 
     private final RestTemplate restTemplate;
-    private final ExpenseRepository expenseRepository;
-    private final IncomeRepository incomeRepository;
+    private final VendorExpenseRepository expenseRepository;
+    private final RevenueInvoiceRepository invoiceRepository;
     private final UserRepository userRepository;
 
     @Value("${app.aiServiceUrl}")
@@ -46,30 +46,28 @@ public class AiIntegrationService {
                 .orElseThrow(() -> new RuntimeException("Authenticated user not found"));
     }
 
-    private List<Map<String, Object>> expensesToPayload(List<Expense> expenses) {
+    private List<Map<String, Object>> expensesToPayload(List<VendorExpense> expenses) {
         return expenses.stream().map(e -> {
             Map<String, Object> map = new HashMap<>();
-            map.put("category", e.getCategory() != null ? e.getCategory() : "Other");
+            map.put("category", e.getCategory() != null ? e.getCategory() : "SaaS & Software");
             map.put("amount", e.getAmount() != null ? e.getAmount() : 0.0);
             map.put("date", e.getDate() != null ? e.getDate().toString() : LocalDate.now().toString());
             return map;
         }).collect(Collectors.toList());
     }
 
-    private double getMonthlyIncome(User user) {
+    private double getMonthlyRevenue(User user) {
         LocalDate startOfMonth = LocalDate.now().withDayOfMonth(1);
-        List<Income> allIncomes = incomeRepository.findByUserIdOrderByDateDesc(user.getId());
-        return allIncomes.stream()
+        List<RevenueInvoice> allInvoices = invoiceRepository.findByUserIdOrderByDateDesc(user.getId());
+        return allInvoices.stream()
                 .filter(i -> i.getDate() != null && !i.getDate().isBefore(startOfMonth))
                 .mapToDouble(i -> i.getAmount() != null ? i.getAmount() : 0.0)
                 .sum();
     }
 
-    // -- Existing methods --
-
     public AiInsightsResponse getInsights() {
         User user = getCurrentUser();
-        List<Expense> expenses = expenseRepository.findByUserIdOrderByDateDesc(user.getId());
+        List<VendorExpense> expenses = expenseRepository.findByUserIdOrderByDateDesc(user.getId());
 
         if (expenses.isEmpty()) {
             return AiInsightsResponse.builder()
@@ -81,9 +79,6 @@ public class AiIntegrationService {
         }
 
         try {
-            if (aiServiceUrl == null || aiServiceUrl.trim().isEmpty()) {
-                throw new RuntimeException("AI Service URL is not configured.");
-            }
             Map<String, Object> payload = new HashMap<>();
             payload.put("expenses", expensesToPayload(expenses));
 
@@ -106,20 +101,17 @@ public class AiIntegrationService {
 
     public AiPredictionResponse getPredictions() {
         User user = getCurrentUser();
-        List<Expense> expenses = expenseRepository.findByUserIdOrderByDateDesc(user.getId());
+        List<VendorExpense> expenses = expenseRepository.findByUserIdOrderByDateDesc(user.getId());
 
         if (expenses.isEmpty()) {
             return AiPredictionResponse.builder()
                     .predictedNextMonthExpense(0.0)
                     .forecastedSavings(0.0)
-                    .trendSummary("Insufficient data for prediction.")
+                    .trendSummary("Awaiting vendor log files to train models.")
                     .build();
         }
 
         try {
-            if (aiServiceUrl == null || aiServiceUrl.trim().isEmpty()) {
-                throw new RuntimeException("AI Service URL is not configured.");
-            }
             Map<String, Object> payload = new HashMap<>();
             payload.put("expenses", expensesToPayload(expenses));
 
@@ -142,9 +134,6 @@ public class AiIntegrationService {
 
     public OcrScanResponse scanReceipt(String base64Image, String fileName) {
         try {
-            if (aiServiceUrl == null || aiServiceUrl.trim().isEmpty()) {
-                throw new RuntimeException("AI Service URL is not configured.");
-            }
             Map<String, Object> payload = new HashMap<>();
             payload.put("image", base64Image);
             payload.put("fileName", fileName);
@@ -169,9 +158,6 @@ public class AiIntegrationService {
     @SuppressWarnings("unchecked")
     public Map<String, Object> explainTrend(Map<String, Object> payload) {
         try {
-            if (aiServiceUrl == null || aiServiceUrl.trim().isEmpty()) {
-                throw new RuntimeException("AI Service URL is not configured.");
-            }
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
             HttpEntity<Map<String, Object>> request = new HttpEntity<>(payload, headers);
@@ -186,14 +172,14 @@ public class AiIntegrationService {
             }
         } catch (Exception ex) {
             Map<String, Object> fallback = new HashMap<>();
-            fallback.put("explanation", "AI Service offline. RandomForest calculations estimate standard weekend spend intensity changes at 14.5% driven by food categories.");
+            fallback.put("explanation", "AI Service offline. RandomForest calculations estimate standard infrastructure spend intensity changes at 14.5% driven by SaaS/Software categories.");
             return fallback;
         }
     }
 
     public AnomalyResponse getAnomalies() {
         User user = getCurrentUser();
-        List<Expense> expenses = expenseRepository.findByUserIdOrderByDateDesc(user.getId());
+        List<VendorExpense> expenses = expenseRepository.findByUserIdOrderByDateDesc(user.getId());
 
         if (expenses.isEmpty()) {
             return AnomalyResponse.builder()
@@ -204,9 +190,6 @@ public class AiIntegrationService {
         }
 
         try {
-            if (aiServiceUrl == null || aiServiceUrl.trim().isEmpty()) {
-                throw new RuntimeException("AI Service URL is not configured.");
-            }
             Map<String, Object> payload = new HashMap<>();
             payload.put("expenses", expensesToPayload(expenses));
 
@@ -229,7 +212,7 @@ public class AiIntegrationService {
 
     public SegmentResponse getSegment() {
         User user = getCurrentUser();
-        List<Expense> expenses = expenseRepository.findByUserIdOrderByDateDesc(user.getId());
+        List<VendorExpense> expenses = expenseRepository.findByUserIdOrderByDateDesc(user.getId());
 
         if (expenses.isEmpty()) {
             return SegmentResponse.builder()
@@ -240,9 +223,6 @@ public class AiIntegrationService {
         }
 
         try {
-            if (aiServiceUrl == null || aiServiceUrl.trim().isEmpty()) {
-                throw new RuntimeException("AI Service URL is not configured.");
-            }
             Map<String, Object> payload = new HashMap<>();
             payload.put("expenses", expensesToPayload(expenses));
 
@@ -265,8 +245,8 @@ public class AiIntegrationService {
 
     public RiskScoreResponse getRiskScore() {
         User user = getCurrentUser();
-        List<Expense> expenses = expenseRepository.findByUserIdOrderByDateDesc(user.getId());
-        double monthlyIncome = getMonthlyIncome(user);
+        List<VendorExpense> expenses = expenseRepository.findByUserIdOrderByDateDesc(user.getId());
+        double monthlyRevenue = getMonthlyRevenue(user);
 
         if (expenses.isEmpty()) {
             return RiskScoreResponse.builder()
@@ -277,12 +257,9 @@ public class AiIntegrationService {
         }
 
         try {
-            if (aiServiceUrl == null || aiServiceUrl.trim().isEmpty()) {
-                throw new RuntimeException("AI Service URL is not configured.");
-            }
             Map<String, Object> payload = new HashMap<>();
             payload.put("expenses", expensesToPayload(expenses));
-            payload.put("income", monthlyIncome);
+            payload.put("income", monthlyRevenue);
 
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
@@ -304,9 +281,6 @@ public class AiIntegrationService {
     @SuppressWarnings("unchecked")
     public Map<String, Object> getAiHealth() {
         try {
-            if (aiServiceUrl == null || aiServiceUrl.trim().isEmpty()) {
-                throw new RuntimeException("AI Service URL is not configured.");
-            }
             ResponseEntity<Map> response = restTemplate.getForEntity(
                     aiServiceUrl + "/api/ai/health", Map.class);
             if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
@@ -325,7 +299,7 @@ public class AiIntegrationService {
     @SuppressWarnings("unchecked")
     public Map<String, Object> getSubscriptions() {
         User user = getCurrentUser();
-        List<Expense> expenses = expenseRepository.findByUserIdOrderByDateDesc(user.getId());
+        List<VendorExpense> expenses = expenseRepository.findByUserIdOrderByDateDesc(user.getId());
 
         if (expenses.isEmpty()) {
             Map<String, Object> empty = new HashMap<>();
@@ -336,9 +310,6 @@ public class AiIntegrationService {
         }
 
         try {
-            if (aiServiceUrl == null || aiServiceUrl.trim().isEmpty()) {
-                throw new RuntimeException("AI Service URL is not configured.");
-            }
             Map<String, Object> payload = new HashMap<>();
             payload.put("expenses", expensesToPayload(expenses));
 
