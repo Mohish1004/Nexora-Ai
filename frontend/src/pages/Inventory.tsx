@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAppStore, Product } from '../store/appStore';
 import { 
   Package, 
@@ -31,6 +31,15 @@ export default function Inventory() {
 
   // Selected product forecast state
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(inventory[1]);
+  const [forecastData, setForecastData] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (selectedProduct) {
+      mockApi.getInventoryForecast(selectedProduct.id).then(setForecastData);
+    } else {
+      setForecastData([]);
+    }
+  }, [selectedProduct]);
 
   const handleAddProduct = (e: React.FormEvent) => {
     e.preventDefault();
@@ -61,10 +70,7 @@ export default function Inventory() {
   const inStockItems = inventory.filter(p => p.status === 'In Stock').length;
   const healthPercent = Math.round((inStockItems / totalItems) * 100);
 
-  // Forecast data for selected product
-  const forecastData = selectedProduct 
-    ? mockApi.getInventoryForecast(selectedProduct.id) 
-    : [];
+
 
   return (
     <div className="space-y-8 animate-float-medium">
