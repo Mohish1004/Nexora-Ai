@@ -30,59 +30,68 @@ export default function Dashboard() {
   const { activeWorkspace, inventory, receivables, payables, expenses } = useAppStore();
   const isBusiness = activeWorkspace === 'business';
 
-  // --- MOCK BUSINESS DATA ---
+  const invValue = inventory.reduce((a, b) => a + b.purchasePrice * b.stock, 0);
+  const lowStockCount = inventory.filter(p => p.status === 'Low Stock' || p.status === 'Out of Stock').length;
+  const receivablesTotal = receivables.reduce((a, b) => a + b.amount, 0);
+  const payablesTotal = payables.reduce((a, b) => a + b.amount, 0);
+  const expensesTotal = expenses.reduce((a, b) => a + b.amount, 0);
+  const pendingCount = receivables.filter(r => r.status === 'urgent' || r.status === 'warning').length;
+
+  // --- BUSINESS DATA ---
   const businessKpis = [
-    { name: 'Inventory Value', value: '₹22,40,000', icon: Package, trend: '+4.2%', color: 'text-cyan-400' },
-    { name: 'Revenue (MTD)', value: '₹8,50,000', icon: TrendingUp, trend: '+12.5%', color: 'text-violet-400' },
-    { name: 'Receivables Outstanding', value: `₹${receivables.reduce((a, b) => a + b.amount, 0).toLocaleString()}`, icon: ArrowUpRight, trend: '3 Clients Pending', color: 'text-yellow-400' },
-    { name: 'Payables Due', value: `₹${payables.reduce((a, b) => a + b.amount, 0).toLocaleString()}`, icon: ArrowDownLeft, trend: 'Due in 5 days', color: 'text-rose-400' },
-    { name: 'Low Stock Alerts', value: `${inventory.filter(p => p.status === 'Low Stock' || p.status === 'Out of Stock').length} Items`, icon: AlertTriangle, trend: 'Alarms Active', color: 'text-amber-500' },
+    { name: 'Inventory Value', value: `₹${invValue.toLocaleString()}`, icon: Package, trend: `${inventory.length} Items`, color: 'text-cyan-400' },
+    { name: 'Receivables', value: `₹${receivablesTotal.toLocaleString()}`, icon: ArrowUpRight, trend: `${pendingCount} Pending`, color: 'text-violet-400' },
+    { name: 'Payables Due', value: `₹${payablesTotal.toLocaleString()}`, icon: ArrowDownLeft, trend: `${payables.length} Bills`, color: 'text-yellow-400' },
+    { name: 'Low Stock Alerts', value: `${lowStockCount} Items`, icon: AlertTriangle, trend: lowStockCount > 0 ? 'Action Needed' : 'All Good', color: lowStockCount > 0 ? 'text-amber-500' : 'text-emerald-400' },
   ];
 
   const businessChartData = [
-    { month: 'Jan', Revenue: 400000, Expenses: 240000 },
-    { month: 'Feb', Revenue: 500000, Expenses: 280000 },
-    { month: 'Mar', Revenue: 620000, Expenses: 310000 },
-    { month: 'Apr', Revenue: 580000, Expenses: 300000 },
-    { month: 'May', Revenue: 750000, Expenses: 340000 },
-    { month: 'Jun', Revenue: 850000, Expenses: 410000 },
+    { month: 'Jan', Revenue: 0, Expenses: 0 },
+    { month: 'Feb', Revenue: 0, Expenses: 0 },
+    { month: 'Mar', Revenue: 0, Expenses: 0 },
+    { month: 'Apr', Revenue: 0, Expenses: 0 },
+    { month: 'May', Revenue: 0, Expenses: 0 },
+    { month: 'Jun', Revenue: 0, Expenses: 0 },
   ];
 
-  const inventoryCategoryData = [
-    { name: 'Laptops', value: 450000 },
-    { name: 'Phones', value: 300000 },
-    { name: 'Tablets', value: 120000 },
-    { name: 'Accessories', value: 80000 },
-  ];
+  const categoryMap: Record<string, number> = {};
+  inventory.forEach(p => {
+    categoryMap[p.category] = (categoryMap[p.category] || 0) + p.purchasePrice * p.stock;
+  });
+  const inventoryCategoryData = Object.entries(categoryMap).map(([name, value]) => ({ name, value }));
+  if (inventoryCategoryData.length === 0) {
+    inventoryCategoryData.push({ name: 'No Data', value: 1 });
+  }
 
-  // --- MOCK PERSONAL DATA ---
+  // --- PERSONAL DATA ---
   const personalKpis = [
-    { name: 'Net Cash Balance', value: '₹2,68,500', icon: Wallet, trend: '+3.1% this week', color: 'text-emerald-400' },
-    { name: 'Monthly Inflows', value: '₹85,000', icon: TrendingUp, trend: '+5.0%', color: 'text-cyan-400' },
-    { name: 'Outflows (MTD)', value: `₹${expenses.reduce((a, b) => a + b.amount, 0).toLocaleString()}`, icon: TrendingDown, trend: '₹9,800 Remaining Cap', color: 'text-rose-400' },
-    { name: 'Active Goals Saved', value: '₹2,47,000', icon: PiggyBank, trend: '3 Targets Active', color: 'text-violet-400' },
+    { name: 'Outflows (MTD)', value: `₹${expensesTotal.toLocaleString()}`, icon: TrendingDown, trend: `${expenses.length} Entries`, color: 'text-rose-400' },
+    { name: 'Expense Categories', value: `${new Set(expenses.map(e => e.category)).size}`, icon: Wallet, trend: 'Active', color: 'text-emerald-400' },
+    { name: 'Receipts Scanned', value: `${expenses.length}`, icon: TrendingUp, trend: 'MTD Total', color: 'text-cyan-400' },
   ];
 
   const personalChartData = [
-    { month: 'Week 1', Spent: 4200, Savings: 12000 },
-    { month: 'Week 2', Spent: 5600, Savings: 15000 },
-    { month: 'Week 3', Spent: 3100, Savings: 18000 },
-    { month: 'Week 4', Spent: 9800, Savings: 22000 },
+    { month: 'Week 1', Spent: 0, Savings: 0 },
+    { month: 'Week 2', Spent: 0, Savings: 0 },
+    { month: 'Week 3', Spent: 0, Savings: 0 },
+    { month: 'Week 4', Spent: 0, Savings: 0 },
   ];
 
-  const expenseBreakdownData = [
-    { name: 'Bills', value: 3500 },
-    { name: 'Food', value: 1200 },
-    { name: 'Travel', value: 4500 },
-    { name: 'Shopping', value: 800 },
-  ];
+  const expenseCatMap: Record<string, number> = {};
+  expenses.forEach(e => {
+    expenseCatMap[e.category] = (expenseCatMap[e.category] || 0) + e.amount;
+  });
+  const expenseBreakdownData = Object.entries(expenseCatMap).map(([name, value]) => ({ name, value }));
+  if (expenseBreakdownData.length === 0) {
+    expenseBreakdownData.push({ name: 'No Expenses', value: 1 });
+  }
 
   const COLORS = ['#00D4FF', '#7C4DFF', '#00E676', '#FFB300'];
 
   const activeAccent = isBusiness ? 'text-primary' : 'text-primary-emerald';
 
   return (
-    <div className="space-y-8 animate-float-slow">
+    <div className="space-y-8">
       {/* Title & Page Header */}
       <div>
         <h2 className="text-3xl font-black text-white font-display">

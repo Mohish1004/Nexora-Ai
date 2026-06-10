@@ -16,8 +16,7 @@ export default function Login() {
       setError('Please fill in all security credentials.');
       return;
     }
-    // Standard mock login
-    login('Executive Director', email, 'both');
+    login(email.split('@')[0], email, 'business');
     navigate('/select-workspace');
   };
 

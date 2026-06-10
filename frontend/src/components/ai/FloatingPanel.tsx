@@ -3,10 +3,10 @@ import { useAppStore } from '../../store/appStore';
 import { Sparkles, X, Send, Bot, MessageSquare } from 'lucide-react';
 
 export default function FloatingPanel() {
-  const { activeWorkspace } = useAppStore();
+  const { activeWorkspace, user } = useAppStore();
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Array<{ sender: 'ai' | 'user'; text: string }>>([
-    { sender: 'ai', text: "Ask Nexora anything about active business balances, inventory health, or personal outflows." }
+    { sender: 'ai', text: `Hello ${user?.name || 'there'}! Ask me about your balances, inventory, or expenses.` }
   ]);
   const [input, setInput] = useState('');
   

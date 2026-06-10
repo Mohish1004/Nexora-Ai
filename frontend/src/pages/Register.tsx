@@ -11,7 +11,7 @@ export default function Register() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [workspaceMode, setWorkspaceMode] = useState<'business' | 'personal' | 'both'>('both');
+  const [workspaceMode, setWorkspaceMode] = useState<'business' | 'personal' | 'both' | null>(null);
 
   const handleNextStep = (e: React.FormEvent) => {
     e.preventDefault();
@@ -20,7 +20,8 @@ export default function Register() {
   };
 
   const handleComplete = () => {
-    login(name || 'Executive Director', email || 'ceo@nexora.ai', workspaceMode);
+    if (!workspaceMode) return;
+    login(name, email, workspaceMode);
     navigate('/select-workspace');
   };
 
@@ -156,7 +157,12 @@ export default function Register() {
               </button>
               <button
                 onClick={handleComplete}
-                className="flex-1 py-3 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold text-xs transition-all shadow-lg"
+                disabled={!workspaceMode}
+                className={`flex-1 py-3 rounded-xl text-white font-bold text-xs transition-all shadow-lg ${
+                  workspaceMode
+                    ? 'bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500'
+                    : 'bg-white/5 text-gray-500 cursor-not-allowed'
+                }`}
               >
                 Complete Set
               </button>
