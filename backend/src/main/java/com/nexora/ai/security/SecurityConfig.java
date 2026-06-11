@@ -37,6 +37,7 @@ public class SecurityConfig {
             .csrf(AbstractHttpConfigurer::disable)
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/auth/**").permitAll()
+                .requestMatchers("/api/health").permitAll()
                 .requestMatchers("/h2-console/**").permitAll()
                 .requestMatchers("/api/ws/**").permitAll() // WebSockets
                 .requestMatchers("/actuator/**").permitAll() // Health check
