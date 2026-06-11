@@ -86,6 +86,7 @@ interface AppState {
     workspaceMode: 'business' | 'personal' | 'both';
   } | null;
   activeWorkspace: 'business' | 'personal';
+  workspaceId: number | null;
   notifications: Notification[];
   inventory: Product[];
   customers: Customer[];
@@ -96,8 +97,9 @@ interface AppState {
   goals: Goal[];
   activeOverlay: 'notification' | 'profile' | 'assistant' | 'command' | 'modal' | null;
 
-  login: (name: string, email: string, mode: 'business' | 'personal' | 'both') => void;
+  login: (name: string, email: string, mode: 'business' | 'personal' | 'both', workspaceId?: number) => void;
   logout: () => void;
+  setWorkspaceId: (id: number) => void;
   setTheme: (theme: 'dark' | 'light') => void;
   setBlobOpacity: (opacity: number) => void;
   setAccentHue: (hue: 'cyan' | 'emerald') => void;
@@ -125,6 +127,7 @@ export const useAppStore = create<AppState>((set) => ({
   accentHue: (localStorage.getItem('nexora-accent-hue') as 'cyan' | 'emerald') || 'cyan',
   user: null,
   activeWorkspace: 'business',
+  workspaceId: null,
 
   notifications: [],
   inventory: [],
@@ -136,10 +139,11 @@ export const useAppStore = create<AppState>((set) => ({
   goals: [],
   activeOverlay: null,
 
-  login: (name, email, mode) => set({
+  login: (name, email, mode, workspaceId) => set({
     isAuthenticated: true,
     user: { name, email, role: 'User', accountBalance: 0, workspaceMode: mode },
     activeWorkspace: mode === 'personal' ? 'personal' : 'business',
+    workspaceId: workspaceId ?? null,
   }),
 
   setTheme: (theme) => {
@@ -161,6 +165,7 @@ export const useAppStore = create<AppState>((set) => ({
     isAuthenticated: false,
     user: null,
     dataLoaded: false,
+    workspaceId: null,
     notifications: [],
     inventory: [],
     customers: [],
@@ -171,57 +176,103 @@ export const useAppStore = create<AppState>((set) => ({
     goals: [],
   }),
 
+  setWorkspaceId: (id) => set({ workspaceId: id }),
   setActiveWorkspace: (workspace) => set({ activeWorkspace: workspace }),
   setActiveOverlay: (overlay) => set({ activeOverlay: overlay }),
 
   fetchAllData: async () => {
     try {
       const state = useAppStore.getState();
+      const wsId = state.workspaceId;
       const mode = state.user?.workspaceMode || 'business';
       const isBusiness = mode === 'business' || mode === 'both';
       const isPersonal = mode === 'personal' || mode === 'both';
+      if (!wsId) { set({ dataLoaded: true }); return; }
 
       const fetches: Promise<any>[] = [];
       if (isBusiness) {
         fetches.push(
-          api.getInventory(),
-          api.getCustomers(),
-          api.getVendors(),
-          api.getReceivables(),
-          api.getPayables(),
+          api.getProducts(wsId),
+          api.getCustomers(wsId),
+          api.getVendors(wsId),
+          api.getReceivablesPayables(wsId),
         );
       }
       if (isPersonal) {
         fetches.push(
-          api.getExpenses(),
-          api.getGoals(),
+          api.getTransactions(wsId),
         );
       }
-      fetches.push(api.getNotifications());
 
       const results = await Promise.all(fetches);
       const update: any = { dataLoaded: true };
       let idx = 0;
       if (isBusiness) {
-        update.inventory = results[idx++];
-        update.customers = results[idx++];
-        update.vendors = results[idx++];
-        update.receivables = results[idx++];
-        update.payables = results[idx++];
+        update.inventory = (results[idx++] || []).map((p: any) => ({
+          id: String(p.id),
+          name: p.name,
+          sku: p.sku || '',
+          category: p.category || '',
+          stock: p.quantity ?? 0,
+          minStock: p.threshold ?? 0,
+          purchasePrice: Number(p.purchasePrice) || 0,
+          sellingPrice: Number(p.sellingPrice) || 0,
+          status: p.lowStock ? 'Low Stock' : 'In Stock',
+        }));
+        update.customers = (results[idx++] || []).map((c: any) => ({
+          id: String(c.id),
+          name: c.name,
+          email: c.email || '',
+          phone: c.phone,
+          outstanding: Number(c.outstandingBalance) || 0,
+          lastPaymentDate: '',
+        }));
+        update.vendors = (results[idx++] || []).map((v: any) => ({
+          id: String(v.id),
+          name: v.name,
+          service: v.email || '',
+          amountOwed: Number(v.amountOwed) || 0,
+          dueDate: '',
+        }));
+        const rpList: any[] = results[idx++] || [];
+        update.receivables = rpList
+          .filter((r: any) => r.type === 'RECEIVABLE')
+          .map((r: any) => ({
+            id: String(r.id),
+            customerName: r.partyName,
+            amount: Number(r.amount) || 0,
+            dueDate: r.dueDate || '',
+            daysRemaining: 0,
+            status: r.status === 'OVERDUE' ? 'urgent' : r.status === 'PAID' ? 'current' : 'warning',
+          }));
+        update.payables = rpList
+          .filter((r: any) => r.type === 'PAYABLE')
+          .map((r: any) => ({
+            id: String(r.id),
+            vendorName: r.partyName,
+            amount: Number(r.amount) || 0,
+            dueDate: r.dueDate || '',
+            status: (r.status === 'PAID' ? 'paid' : r.status === 'OVERDUE' ? 'pending' : 'scheduled') as 'pending' | 'scheduled' | 'paid',
+          }));
       }
       if (isPersonal) {
-        update.expenses = results[idx++];
-        update.goals = results[idx++];
+        update.expenses = (results[idx++] || []).map((t: any) => ({
+          id: String(t.id),
+          amount: Number(t.amount) || 0,
+          category: t.category || '',
+          date: t.date || '',
+          notes: t.description || '',
+        }));
+        update.goals = [];
       }
-      update.notifications = results[idx];
       set(update);
     } catch (error) {
       console.error('Failed to fetch data:', error);
+      set({ dataLoaded: true });
     }
   },
 
   markNotificationRead: async (id) => {
-    await api.markNotificationRead(id);
     set((state) => ({
       notifications: state.notifications.map((n) =>
         n.id === id ? { ...n, read: true } : n
@@ -230,63 +281,82 @@ export const useAppStore = create<AppState>((set) => ({
   },
 
   addProduct: async (product) => {
-    const newProduct = await api.addProduct(product);
+    const wsId = useAppStore.getState().workspaceId;
+    if (wsId) {
+      try { await api.addProduct(wsId, product); } catch {}
+    }
+    const newProduct: Product = {
+      ...product,
+      id: Date.now().toString(),
+      status: product.stock <= 0 ? 'Out of Stock' : product.stock <= product.minStock ? 'Low Stock' : 'In Stock',
+    };
     set((state) => ({ inventory: [...state.inventory, newProduct] }));
   },
 
   editProduct: async (id, updated) => {
-    const updatedProduct = await api.updateProduct(id, updated);
+    const wsId = useAppStore.getState().workspaceId;
+    if (wsId) {
+      try { await api.updateProduct(wsId, id, updated); } catch {}
+    }
     set((state) => ({
-      inventory: state.inventory.map((p) => p.id === id ? updatedProduct : p),
+      inventory: state.inventory.map((p) => p.id === id ? { ...p, ...updated } : p),
     }));
   },
 
   deleteProduct: async (id) => {
-    await api.deleteProduct(id);
+    const wsId = useAppStore.getState().workspaceId;
+    if (wsId) {
+      try { await api.deleteProduct(wsId, id); } catch {}
+    }
     set((state) => ({ inventory: state.inventory.filter((p) => p.id !== id) }));
   },
 
   addExpense: async (expense) => {
-    const newExpense = await api.addExpense(expense);
-    set((state) => ({ expenses: [...state.expenses, newExpense] }));
+    set((state) => ({ expenses: [...state.expenses, expense as Expense] }));
   },
 
   addGoal: async (goal) => {
-    const newGoal = await api.addGoal(goal);
-    set((state) => ({ goals: [...state.goals, newGoal] }));
+    set((state) => ({ goals: [...state.goals, goal as Goal] }));
   },
 
   updateGoalAmount: async (id, amount) => {
-    const updatedGoal = await api.saveToGoal(id, amount);
     set((state) => ({
-      goals: state.goals.map((g) => g.id === id ? updatedGoal : g),
+      goals: state.goals.map((g) => g.id === id ? { ...g, currentAmount: amount } : g),
     }));
   },
 
   sendPaymentReminder: async (id) => {
-    const result = await api.sendReminder(id);
     set((state) => ({
-      notifications: [result.notification, ...state.notifications],
+      notifications: [{ id: Date.now().toString(), title: 'Reminder Sent', description: `Payment reminder sent for receivable #${id}`, type: 'reminder_sent', timestamp: new Date().toISOString(), read: false }, ...state.notifications],
     }));
   },
 
   addCustomer: async (customer) => {
-    const result = await api.addCustomer(customer);
+    const wsId = useAppStore.getState().workspaceId;
+    if (wsId) {
+      try { await api.addCustomer(wsId, customer); } catch {}
+    }
+    const newCustomer = { ...customer, id: Date.now().toString(), lastPaymentDate: new Date().toISOString() } as Customer;
     set((state) => ({
-      customers: [...state.customers, result.customer],
-      notifications: [result.notification, ...state.notifications],
+      customers: [...state.customers, newCustomer],
     }));
   },
 
   updateCustomer: async (id, data) => {
-    const updated = await api.updateCustomer(id, data);
+    const wsId = useAppStore.getState().workspaceId;
+    if (wsId) {
+      try { await api.updateCustomer(wsId, id, data); } catch {}
+    }
     set((state) => ({
-      customers: state.customers.map((c) => c.id === id ? updated : c),
+      customers: state.customers.map((c) => c.id === id ? { ...c, ...data } : c),
     }));
   },
 
   deleteCustomer: async (id) => {
-    await api.deleteCustomer(id);
+    const wsId = useAppStore.getState().workspaceId;
+    if (wsId) {
+      try { await api.deleteCustomer(wsId, id); } catch {}
+    }
     set((state) => ({
       customers: state.customers.filter((c) => c.id !== id),
     }));

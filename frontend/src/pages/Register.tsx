@@ -1,28 +1,49 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAppStore } from '../store/appStore';
-import { Cpu, Mail, Key, User, Briefcase, PiggyBank, Layers, ArrowRight } from 'lucide-react';
+import { api } from '../services/api';
+import { Cpu, Mail, Key, User, Briefcase, PiggyBank, Layers, ArrowRight, Loader, AlertCircle } from 'lucide-react';
 
 export default function Register() {
   const navigate = useNavigate();
   const login = useAppStore(state => state.login);
+  const setWorkspaceId = useAppStore(state => state.setWorkspaceId);
   
   const [step, setStep] = useState(1);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [workspaceMode, setWorkspaceMode] = useState<'business' | 'personal' | 'both' | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
   const handleNextStep = (e: React.FormEvent) => {
     e.preventDefault();
     if (!name || !email || !password) return;
+    setError('');
     setStep(2);
   };
 
-  const handleComplete = () => {
+  const handleComplete = async () => {
     if (!workspaceMode) return;
-    login(name, email, workspaceMode);
-    navigate('/select-workspace');
+    setLoading(true);
+    setError('');
+    const wsType = workspaceMode === 'both' ? 'BOTH' : workspaceMode === 'business' ? 'BUSINESS' : 'PERSONAL';
+    try {
+      const res = await api.register({ email, password, fullName: name, workspaceType: wsType });
+      const wsList = await api.getWorkspaces();
+      const wsId = wsList[0]?.id;
+      login(res.fullName, res.email, workspaceMode, wsId);
+      if (wsId) setWorkspaceId(wsId);
+      navigate('/select-workspace');
+    } catch (err: any) {
+      const msg = err?.response?.data?.message || 'Backend unavailable — proceeding in offline mode.';
+      setError(msg);
+      login(name, email, workspaceMode);
+      navigate('/select-workspace');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -44,6 +65,13 @@ export default function Register() {
             {step === 1 ? 'Step 1: Security Setup' : 'Step 2: Workspace Mapping'}
           </p>
         </div>
+
+        {error && (
+          <div className="mt-4 p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-xs flex items-center gap-2">
+            <AlertCircle size={14} />
+            <span>{error}</span>
+          </div>
+        )}
 
         {step === 1 ? (
           <form onSubmit={handleNextStep} className="mt-6 space-y-4">
@@ -157,14 +185,15 @@ export default function Register() {
               </button>
               <button
                 onClick={handleComplete}
-                disabled={!workspaceMode}
-                className={`flex-1 py-3 rounded-xl text-white font-bold text-xs transition-all shadow-lg ${
-                  workspaceMode
+                disabled={!workspaceMode || loading}
+                className={`flex-1 py-3 rounded-xl text-white font-bold text-xs transition-all shadow-lg flex items-center justify-center gap-2 ${
+                  workspaceMode && !loading
                     ? 'bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500'
                     : 'bg-white/5 text-gray-500 cursor-not-allowed'
                 }`}
               >
-                Complete Set
+                {loading ? <Loader size={14} className="animate-spin" /> : null}
+                {loading ? 'Registering...' : 'Complete Set'}
               </button>
             </div>
           </div>

@@ -4,68 +4,111 @@ const API_BASE = import.meta.env.VITE_API_URL || '/api';
 
 const client = axios.create({ baseURL: API_BASE });
 
+function unwrap<T>(res: { data: { data: T } }): T {
+  return res.data.data;
+}
+
+// ── Auth ──
 export const api = {
   login: (email: string, password: string) =>
-    client.post('/auth/login', { email, password }).then(r => r.data),
+    client.post('/auth/login', { email, password }).then(unwrap),
 
-  register: (data: { name: string; email: string; workspaceMode: string }) =>
-    client.post('/auth/register', data).then(r => r.data),
+  register: (data: { email: string; password: string; fullName: string; workspaceType: string }) =>
+    client.post('/auth/register', data).then(unwrap),
 
-  getInventory: () => client.get('/inventory').then(r => r.data),
+  refreshToken: (refreshToken: string) =>
+    client.post('/auth/refresh', { refreshToken }).then(unwrap),
 
-  addProduct: (data: any) =>
-    client.post('/inventory', data).then(r => r.data),
+  logout: () =>
+    client.post('/auth/logout').then(r => r.data),
 
-  updateProduct: (id: string, data: any) =>
-    client.put(`/inventory/${id}`, data).then(r => r.data),
+  // ── Workspaces ──
+  getWorkspaces: () =>
+    client.get('/workspaces').then(unwrap),
 
-  deleteProduct: (id: string) =>
-    client.delete(`/inventory/${id}`).then(r => r.data),
+  // ── Products ──
+  getProducts: (wsId: number) =>
+    client.get(`/workspaces/${wsId}/products`).then(unwrap),
 
-  getCustomers: () => client.get('/customers').then(r => r.data),
+  addProduct: (wsId: number, data: any) =>
+    client.post(`/workspaces/${wsId}/products`, data).then(unwrap),
 
-  addCustomer: (data: { name: string; email: string; phone?: string; outstanding?: number }) =>
-    client.post('/customers', data).then(r => r.data),
+  getProduct: (wsId: number, productId: number) =>
+    client.get(`/workspaces/${wsId}/products/${productId}`).then(unwrap),
 
-  updateCustomer: (id: string, data: any) =>
-    client.put(`/customers/${id}`, data).then(r => r.data),
+  updateProduct: (wsId: number, productId: string, data: any) =>
+    client.put(`/workspaces/${wsId}/products/${productId}`, data).then(unwrap),
 
-  deleteCustomer: (id: string) =>
-    client.delete(`/customers/${id}`).then(r => r.data),
+  deleteProduct: (wsId: number, productId: string) =>
+    client.delete(`/workspaces/${wsId}/products/${productId}`).then(unwrap),
 
-  getVendors: () => client.get('/vendors').then(r => r.data),
+  getInventoryValuation: (wsId: number) =>
+    client.get(`/workspaces/${wsId}/products/valuation`).then(unwrap),
 
-  getReceivables: () => client.get('/receivables').then(r => r.data),
+  // ── Customers ──
+  getCustomers: (wsId: number) =>
+    client.get(`/workspaces/${wsId}/customers`).then(unwrap),
 
-  sendReminder: (id: string) =>
-    client.post(`/receivables/${id}/remind`).then(r => r.data),
+  addCustomer: (wsId: number, data: any) =>
+    client.post(`/workspaces/${wsId}/customers`, data).then(unwrap),
 
-  getPayables: () => client.get('/payables').then(r => r.data),
+  getCustomer: (wsId: number, customerId: number) =>
+    client.get(`/workspaces/${wsId}/customers/${customerId}`).then(unwrap),
 
-  getExpenses: () => client.get('/expenses').then(r => r.data),
+  updateCustomer: (wsId: number, customerId: string, data: any) =>
+    client.put(`/workspaces/${wsId}/customers/${customerId}`, data).then(unwrap),
 
-  addExpense: (data: any) =>
-    client.post('/expenses', data).then(r => r.data),
+  deleteCustomer: (wsId: number, customerId: string) =>
+    client.delete(`/workspaces/${wsId}/customers/${customerId}`).then(unwrap),
 
-  getGoals: () => client.get('/goals').then(r => r.data),
+  // ── Vendors ──
+  getVendors: (wsId: number) =>
+    client.get(`/workspaces/${wsId}/vendors`).then(unwrap),
 
-  addGoal: (data: any) =>
-    client.post('/goals', data).then(r => r.data),
+  addVendor: (wsId: number, data: any) =>
+    client.post(`/workspaces/${wsId}/vendors`, data).then(unwrap),
 
-  saveToGoal: (id: string, amount: number) =>
-    client.put(`/goals/${id}/save`, { amount }).then(r => r.data),
+  updateVendor: (wsId: number, vendorId: string, data: any) =>
+    client.put(`/workspaces/${wsId}/vendors/${vendorId}`, data).then(unwrap),
 
-  getNotifications: () => client.get('/notifications').then(r => r.data),
+  deleteVendor: (wsId: number, vendorId: string) =>
+    client.delete(`/workspaces/${wsId}/vendors/${vendorId}`).then(unwrap),
 
-  markNotificationRead: (id: string) =>
-    client.put(`/notifications/${id}/read`).then(r => r.data),
+  // ── Transactions (expenses/income) ──
+  getTransactions: (wsId: number) =>
+    client.get(`/workspaces/${wsId}/transactions`).then(unwrap),
 
-  scanReceipt: (fileName: string) =>
-    client.post('/ocr/scan', { fileName }).then(r => r.data),
+  addTransaction: (wsId: number, data: any) =>
+    client.post(`/workspaces/${wsId}/transactions`, data).then(unwrap),
 
-  getInventoryForecast: (productId: string) =>
-    client.get(`/inventory/forecast/${productId}`).then(r => r.data),
+  // ── Receivables & Payables ──
+  getReceivablesPayables: (wsId: number) =>
+    client.get(`/workspaces/${wsId}/receivables-payables`).then(unwrap),
 
-  runSaaSContractAudit: () =>
-    client.post('/saas/audit').then(r => r.data),
+  addReceivablesPayables: (wsId: number, data: any) =>
+    client.post(`/workspaces/${wsId}/receivables-payables`, data).then(unwrap),
+
+  updateReceivablesPayablesStatus: (wsId: number, id: number, status: string) =>
+    client.patch(`/workspaces/${wsId}/receivables-payables/${id}/status`, null, { params: { status } }).then(unwrap),
+
+  // ── Dashboard ──
+  getBusinessDashboard: (wsId: number) =>
+    client.get(`/workspaces/${wsId}/dashboard/business`).then(unwrap),
+
+  getPersonalDashboard: (wsId: number) =>
+    client.get(`/workspaces/${wsId}/dashboard/personal`).then(unwrap),
+
+  // ── Profile ──
+  getProfile: () =>
+    client.get('/profile').then(unwrap),
+
+  updateProfile: (data: any) =>
+    client.put('/profile', data).then(unwrap),
+
+  updateSubscription: (planType: string) =>
+    client.put('/profile/subscription', null, { params: { planType } }).then(unwrap),
+
+  // ── Health ──
+  getHealth: () =>
+    client.get('/health').then(unwrap),
 };

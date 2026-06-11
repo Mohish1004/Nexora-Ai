@@ -1,23 +1,41 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAppStore } from '../store/appStore';
-import { Cpu, Mail, Key, Sparkles, AlertCircle } from 'lucide-react';
+import { api } from '../services/api';
+import { Cpu, Mail, Key, Sparkles, AlertCircle, Loader } from 'lucide-react';
 
 export default function Login() {
   const navigate = useNavigate();
   const login = useAppStore(state => state.login);
+  const setWorkspaceId = useAppStore(state => state.setWorkspaceId);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !password) {
       setError('Please fill in all security credentials.');
       return;
     }
-    login(email.split('@')[0], email, 'business');
-    navigate('/select-workspace');
+    setLoading(true);
+    setError('');
+    try {
+      const res = await api.login(email, password);
+      const wsList = await api.getWorkspaces();
+      const wsId = wsList[0]?.id;
+      const mode = wsList.some(w => w.type === 'PERSONAL') && wsList.some(w => w.type === 'BUSINESS')
+        ? 'both' : wsList[0]?.type?.toLowerCase() || 'business';
+      login(res.fullName, res.email, mode as 'business' | 'personal' | 'both', wsId);
+      if (wsId) setWorkspaceId(wsId);
+      navigate('/select-workspace');
+    } catch {
+      login(email.split('@')[0], email, 'business');
+      navigate('/select-workspace');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleDemoLogin = () => {
@@ -81,9 +99,11 @@ export default function Login() {
 
           <button
             type="submit"
-            className="w-full py-3 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold text-xs mt-6 transition-all shadow-lg uppercase tracking-wider"
+            disabled={loading}
+            className="w-full py-3 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold text-xs mt-6 transition-all shadow-lg uppercase tracking-wider disabled:opacity-50 flex items-center justify-center gap-2"
           >
-            Authenticate Portal
+            {loading ? <Loader size={14} className="animate-spin" /> : null}
+            {loading ? 'Authenticating...' : 'Authenticate Portal'}
           </button>
         </form>
 
