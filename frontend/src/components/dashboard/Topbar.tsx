@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useAppStore } from '../../store/appStore';
 import { useNavigate } from 'react-router-dom';
 import { 
@@ -32,6 +32,21 @@ export default function Topbar({ onToggleSidebar }: { onToggleSidebar?: () => vo
   const [showNotifications, setShowNotifications] = useState(false);
   const [showProfileCard, setShowProfileCard] = useState(false);
   const [showWorkspaceModal, setShowWorkspaceModal] = useState(false);
+  const notificationsRef = useRef<HTMLDivElement>(null);
+  const profileRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (notificationsRef.current && !notificationsRef.current.contains(e.target as Node)) {
+        setShowNotifications(false);
+      }
+      if (profileRef.current && !profileRef.current.contains(e.target as Node)) {
+        setShowProfileCard(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const isBusiness = activeWorkspace === 'business';
   const unreadCount = notifications.filter(n => !n.read).length;
@@ -97,7 +112,7 @@ export default function Topbar({ onToggleSidebar }: { onToggleSidebar?: () => vo
         </button>
 
         {/* Notification Bell */}
-        <div className="relative">
+        <div className="relative" ref={notificationsRef}>
           <button 
             onClick={() => setShowNotifications(!showNotifications)}
             className="w-10 h-10 rounded-lg glass-card flex items-center justify-center hover:border-white/20 transition-all relative"
@@ -152,7 +167,7 @@ export default function Topbar({ onToggleSidebar }: { onToggleSidebar?: () => vo
         </div>
 
         {/* Profile Dropdown */}
-        <div className="relative">
+        <div className="relative" ref={profileRef}>
           <button 
             onClick={() => setShowProfileCard(!showProfileCard)}
             className="flex items-center gap-2 px-3 py-1.5 rounded-lg glass-card border border-white/10 hover:border-white/20 transition-all"

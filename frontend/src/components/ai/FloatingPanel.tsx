@@ -37,6 +37,18 @@ export default function FloatingPanel() {
   ]);
   const [input, setInput] = useState('');
   const bottomRef = useRef<HTMLDivElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleClickOutside = (e: MouseEvent) => {
+      if (panelRef.current && !panelRef.current.contains(e.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [isOpen]);
   
   const isBusiness = activeWorkspace === 'business';
   const themeAccent = isBusiness ? 'bg-primary border-primary hover:bg-cyan-400' : 'bg-primary-emerald border-primary-emerald hover:bg-emerald-400';
@@ -146,7 +158,7 @@ export default function FloatingPanel() {
 
       {/* Expanded Chat Overlay */}
       {isOpen && (
-        <div className="fixed bottom-6 right-6 z-50 w-80 h-96 glass-card border border-white/10 rounded-2xl flex flex-col justify-between shadow-2xl overflow-hidden animate-float-fast">
+        <div ref={panelRef} className="fixed bottom-6 right-6 z-50 w-80 h-96 glass-card border border-white/10 rounded-2xl flex flex-col justify-between shadow-2xl overflow-hidden animate-float-fast">
           {/* Header */}
           <div className="p-4 border-b border-white/10 flex items-center justify-between bg-white/[0.02]">
             <div className="flex items-center gap-2">

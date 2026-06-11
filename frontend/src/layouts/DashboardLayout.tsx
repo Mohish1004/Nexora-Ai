@@ -12,10 +12,23 @@ interface DashboardLayoutProps {
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const { activeWorkspace } = useAppStore();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const themeClass = activeWorkspace === 'business' ? 'theme-business' : 'theme-personal';
 
+  const handleToggleSidebar = () => {
+    const isMobile = window.innerWidth < 1024;
+    if (isMobile) {
+      setSidebarOpen(prev => !prev);
+    } else {
+      setSidebarCollapsed(prev => !prev);
+    }
+  };
+
   return (
-    <div className={`grid grid-cols-1 lg:grid-cols-[280px_1fr] grid-rows-[72px_1fr] min-h-screen bg-background text-foreground ${themeClass}`}>
+    <div
+      className={`grid grid-cols-1 lg:grid-cols-[280px_1fr] grid-rows-[72px_1fr] min-h-screen bg-background text-foreground ${themeClass}`}
+      style={sidebarCollapsed ? { gridTemplateColumns: '0px 1fr' } as React.CSSProperties : undefined}
+    >
       {/* Background ambient blobs */}
       <div className="liquid-bg">
         <div className="liquid-blob liquid-blob-cyan"></div>
@@ -33,15 +46,17 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
       {/* Topbar - spans full width (1st row, both columns) */}
       <header className="col-span-1 lg:col-span-2 z-20 hidden lg:block">
-        <Topbar onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
+        <Topbar onToggleSidebar={handleToggleSidebar} />
       </header>
 
       {/* Sidebar - 2nd row, 1st column on desktop; slideable overlay on mobile */}
       <aside
-        className={`row-start-2 col-span-1 ${
-          sidebarOpen ? 'fixed inset-y-0 left-0 z-40 w-[85vw] max-w-[280px] lg:static lg:w-full' : 'hidden lg:block'
-        } transform transition-transform duration-300 ease-in-out ${
-          sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+        className={`row-start-2 col-span-1 transition-all duration-300 ease-in-out ${
+          sidebarOpen
+            ? 'fixed inset-y-0 left-0 z-40 w-[85vw] max-w-[280px] lg:static lg:w-full'
+            : 'hidden lg:block'
+        } ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'} ${
+          sidebarCollapsed ? 'lg:overflow-hidden lg:opacity-0 lg:pointer-events-none' : ''
         }`}
       >
         <Sidebar onClose={() => setSidebarOpen(false)} />
