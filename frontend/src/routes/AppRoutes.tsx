@@ -30,7 +30,7 @@ interface GuardProps {
 
 function AuthGuard({ children }: GuardProps) {
   const { isAuthenticated } = useAppStore();
-  return isAuthenticated ? <>{children}</> : <Navigate to="/login" replace />;
+  return isAuthenticated ? <>{children}</> : <Navigate to="/" replace />;
 }
 
 export default function AppRoutes() {

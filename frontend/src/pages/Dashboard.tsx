@@ -60,9 +60,7 @@ export default function Dashboard() {
     categoryMap[p.category] = (categoryMap[p.category] || 0) + p.purchasePrice * p.stock;
   });
   const inventoryCategoryData = Object.entries(categoryMap).map(([name, value]) => ({ name, value }));
-  if (inventoryCategoryData.length === 0) {
-    inventoryCategoryData.push({ name: 'No Data', value: 1 });
-  }
+  const hasInventoryData = inventoryCategoryData.length > 0;
 
   // --- PERSONAL DATA ---
   const personalKpis = [
@@ -83,9 +81,7 @@ export default function Dashboard() {
     expenseCatMap[e.category] = (expenseCatMap[e.category] || 0) + e.amount;
   });
   const expenseBreakdownData = Object.entries(expenseCatMap).map(([name, value]) => ({ name, value }));
-  if (expenseBreakdownData.length === 0) {
-    expenseBreakdownData.push({ name: 'No Expenses', value: 1 });
-  }
+  const hasExpenseData = expenseBreakdownData.length > 0;
 
   const COLORS = ['#00D4FF', '#7C4DFF', '#00E676', '#FFB300'];
 
@@ -181,50 +177,56 @@ export default function Dashboard() {
             </h3>
             <span className={`text-[10px] font-bold uppercase ${activeAccent}`}>Audited Categories</span>
           </div>
-          <div className="h-64 w-full flex items-center justify-center relative">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={isBusiness ? inventoryCategoryData : expenseBreakdownData}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={65}
-                  outerRadius={80}
-                  paddingAngle={5}
-                  dataKey="value"
-                >
-                  {(isBusiness ? inventoryCategoryData : expenseBreakdownData).map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip 
-                  contentStyle={{ 
-                    background: 'rgba(8, 11, 20, 0.9)', 
-                    borderColor: 'rgba(255,255,255,0.1)',
-                    borderRadius: '8px',
-                    color: '#fff',
-                    fontSize: '11px'
-                  }} 
-                />
-              </PieChart>
-            </ResponsiveContainer>
-            <div className="absolute flex flex-col items-center justify-center">
-              <span className="text-[10px] text-gray-500 font-bold uppercase tracking-wider">Total logged</span>
-              <span className="text-lg font-black text-white mt-0.5">
-                {isBusiness ? `₹${invValue.toLocaleString()}` : `₹${expenses.reduce((a, b) => a + b.amount, 0).toLocaleString()}`}
-              </span>
-            </div>
-          </div>
-
-          {/* Legend */}
-          <div className="grid grid-cols-2 gap-2 mt-4">
-            {(isBusiness ? inventoryCategoryData : expenseBreakdownData).map((entry, index) => (
-              <div key={entry.name} className="flex items-center gap-2 text-[10px] text-gray-400">
-                <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: COLORS[index % COLORS.length] }}></span>
-                <span className="truncate">{entry.name}</span>
+          {(isBusiness ? hasInventoryData : hasExpenseData) ? (
+            <>
+              <div className="h-64 w-full flex items-center justify-center relative">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={isBusiness ? inventoryCategoryData : expenseBreakdownData}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={65}
+                      outerRadius={80}
+                      paddingAngle={5}
+                      dataKey="value"
+                    >
+                      {(isBusiness ? inventoryCategoryData : expenseBreakdownData).map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip 
+                      contentStyle={{ 
+                        background: 'rgba(8, 11, 20, 0.9)', 
+                        borderColor: 'rgba(255,255,255,0.1)',
+                        borderRadius: '8px',
+                        color: '#fff',
+                        fontSize: '11px'
+                      }} 
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+                <div className="absolute flex flex-col items-center justify-center">
+                  <span className="text-[10px] text-gray-500 font-bold uppercase tracking-wider">Total logged</span>
+                  <span className="text-lg font-black text-white mt-0.5">
+                    {isBusiness ? `₹${invValue.toLocaleString()}` : `₹${expenses.reduce((a, b) => a + b.amount, 0).toLocaleString()}`}
+                  </span>
+                </div>
               </div>
-            ))}
-          </div>
+              <div className="grid grid-cols-2 gap-2 mt-4">
+                {(isBusiness ? inventoryCategoryData : expenseBreakdownData).map((entry, index) => (
+                  <div key={entry.name} className="flex items-center gap-2 text-[10px] text-gray-400">
+                    <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: COLORS[index % COLORS.length] }}></span>
+                    <span className="truncate">{entry.name}</span>
+                  </div>
+                ))}
+              </div>
+            </>
+          ) : (
+            <div className="h-64 flex items-center justify-center">
+              <p className="text-xs text-gray-500">No data yet. Add {isBusiness ? 'products to your inventory' : 'expenses'} to see your distribution.</p>
+            </div>
+          )}
         </div>
       </div>
     </div>
