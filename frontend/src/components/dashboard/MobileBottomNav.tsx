@@ -62,6 +62,10 @@ function detectIntent(text: string): string {
   if (fuzzyMatch(text, ['balance', 'net worth', 'current balance', 'total money', 'how much i have'])) return 'balance';
   if (fuzzyMatch(text, ['goal', 'saving', 'target', 'save money'])) return 'goals';
   if (fuzzyMatch(text, ['saas', 'contract', 'subscription', 'recurring'])) return 'saas_audit';
+  if (fuzzyMatch(text, ['optimize', 'reduce cost', 'save money', 'cut expense', 'spend less'])) return 'optimize';
+  if (fuzzyMatch(text, ['forecast', 'projection', 'predict', 'trend', 'future'])) return 'forecast';
+  if (fuzzyMatch(text, ['customer', 'vendor', 'client', 'supplier'])) return 'contacts';
+  if (fuzzyMatch(text, ['contact', 'support', 'help', 'bug', 'issue', 'report'])) return 'support';
   return 'unknown';
 }
 
@@ -120,8 +124,30 @@ function AiChatBubble({ isBusiness }: { isBusiness: boolean }) {
         else {
           reply = goals.length === 0 ? "No goals set yet." : `${goals.length} goal(s): ${goals.map(g => `${g.title} (${Math.round(g.currentAmount/g.targetAmount*100)}%)`).join(', ')}.`;
         }
+      } else if (intent === 'saas_audit') {
+        if (!isBusiness) { reply = "SaaS audit is a Business workspace feature."; }
+        else {
+          reply = inventory.length > 0
+            ? `${inventory.length} product types in inventory. Use Reports for full analysis.`
+            : "No products to audit yet.";
+        }
+      } else if (intent === 'optimize') {
+        const topCat = [...new Set(expenses.map(e => e.category))].slice(0, 3);
+        reply = expenses.length === 0
+          ? "No expenses to analyze yet. Log some spending first."
+          : `Top spending: ${topCat.join(', ')}. Look here for savings.`;
+      } else if (intent === 'forecast') {
+        reply = isBusiness
+          ? "Forecasting is available in Business Reports."
+          : "Check Personal Reports for trend analysis.";
+      } else if (intent === 'contacts') {
+        reply = isBusiness
+          ? `You have ${receivables.length} customer record(s) tracked.`
+          : "Contacts are managed in the Business workspace.";
+      } else if (intent === 'support') {
+        reply = "Need help? Visit the Contact page or email support@nexora.ai.";
       } else {
-        reply = `Try asking about ${isBusiness ? 'inventory, receivables, or payables' : 'expenses, goals, or balance'}!`;
+        reply = `Ask about ${isBusiness ? 'inventory, receivables, payables, or savings tips' : 'expenses, goals, balance, or savings tips'}!`;
       }
       setMessages(prev => [...prev, { sender: 'ai', text: reply }]);
     }, 800);

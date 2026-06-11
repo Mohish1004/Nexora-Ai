@@ -17,7 +17,8 @@ import {
   Receipt,
   User,
   Info,
-  LifeBuoy
+  LifeBuoy,
+  Mail
 } from 'lucide-react';
 
 export default function Sidebar({ onClose }: { onClose?: () => void }) {
@@ -105,6 +106,13 @@ export default function Sidebar({ onClose }: { onClose?: () => void }) {
           <span>About</span>
         </button>
         <button
+          onClick={() => { navigate('/contact'); onClose?.(); }}
+          className="group w-full flex items-center gap-3 px-4 py-2 rounded-lg border border-transparent text-gray-400 hover:border-white/10 hover:bg-white/5 hover:text-white text-xs font-medium transition-all duration-300"
+        >
+          <Mail size={16} />
+          <span>Contact</span>
+        </button>
+        <button
           onClick={() => { navigate('/help'); onClose?.(); }}
           className="group w-full flex items-center gap-3 px-4 py-2 rounded-lg border border-transparent text-gray-400 hover:border-white/10 hover:bg-white/5 hover:text-white text-xs font-medium transition-all duration-300"
         >
@@ -149,6 +157,14 @@ export default function Sidebar({ onClose }: { onClose?: () => void }) {
         >
           <LifeBuoy size={14} />
           <span>Help & FAQs</span>
+        </button>
+
+        <button
+          onClick={() => { navigate('/contact'); onClose?.(); }}
+          className="w-full flex items-center gap-2 px-3 py-2 text-xs text-gray-400 hover:text-white rounded transition-colors"
+        >
+          <Mail size={14} />
+          <span>Contact Us</span>
         </button>
 
         <button

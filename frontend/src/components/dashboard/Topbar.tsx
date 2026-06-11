@@ -51,6 +51,15 @@ export default function Topbar({ onToggleSidebar }: { onToggleSidebar?: () => vo
           <Menu size={18} />
         </button>
 
+        {/* Theme Toggle */}
+        <button
+          onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+          className="w-10 h-10 rounded-lg glass-card flex items-center justify-center hover:border-white/20 transition-all text-gray-300 hover:text-white"
+          title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+        >
+          {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
+        </button>
+
         {/* Search Bar */}
         <div className="relative w-64 lg:w-96">
           <Search size={16} className="absolute left-3.5 top-3.5 text-gray-500" />
@@ -76,14 +85,6 @@ export default function Topbar({ onToggleSidebar }: { onToggleSidebar?: () => vo
         >
           {isBusiness ? <Briefcase size={14} /> : <PiggyBank size={14} />}
           <span>Switch to {isBusiness ? 'Personal' : 'Business'}</span>
-        </button>
-
-        {/* Theme Toggle */}
-        <button
-          onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-          className="w-10 h-10 rounded-lg glass-card flex items-center justify-center hover:border-white/20 transition-all text-gray-300 hover:text-white"
-        >
-          {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
         </button>
 
         {/* Floating AI Status Indicator */}

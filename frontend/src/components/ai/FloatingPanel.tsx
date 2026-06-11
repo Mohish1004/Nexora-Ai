@@ -20,10 +20,12 @@ function detectIntent(text: string): string {
   if (fuzzyMatch(text, ['payable', 'what i owe', 'vendor payment', 'bill due', 'money outgoing'])) return 'payables';
   if (fuzzyMatch(text, ['expense', 'spending', 'i spent', 'where money go'])) return 'expenses';
   if (fuzzyMatch(text, ['saas', 'contract', 'subscription', 'recurring'])) return 'saas_audit';
+  if (fuzzyMatch(text, ['optimize', 'reduce cost', 'save money', 'cut expense', 'spend less'])) return 'optimize';
   if (fuzzyMatch(text, ['forecast', 'projection', 'predict', 'trend', 'future'])) return 'forecast';
   if (fuzzyMatch(text, ['balance', 'net worth', 'current balance', 'total money', 'how much i have'])) return 'balance';
   if (fuzzyMatch(text, ['goal', 'saving', 'target', 'save money'])) return 'goals';
   if (fuzzyMatch(text, ['customer', 'vendor', 'client', 'supplier'])) return 'contacts';
+  if (fuzzyMatch(text, ['contact', 'support', 'help', 'bug', 'issue', 'report'])) return 'support';
   return 'unknown';
 }
 
@@ -115,8 +117,15 @@ export default function FloatingPanel() {
             ? "No savings goals set yet. Create one in the Savings & Goals section."
             : `You have ${goals.length} goal${goals.length > 1 ? 's' : ''}: ${goals.map(g => `${g.title} (₹${g.currentAmount.toLocaleString()}/₹${g.targetAmount.toLocaleString()})`).join(', ')}.`;
         }
+      } else if (intent === 'optimize') {
+        const topCat = [...new Set(expenses.map(e => e.category))].slice(0, 3);
+        reply = expenses.length === 0
+          ? "No expenses to analyze yet. Log some spending first to get optimization suggestions."
+          : `Based on your ${expenses.length} transaction${expenses.length > 1 ? 's' : ''}, top spending categor${topCat.length > 1 ? 'ies' : 'y'} are ${topCat.join(', ')}. Review these areas for potential savings.`;
+      } else if (intent === 'support') {
+        reply = "Need help? Visit the Contact page from the sidebar or email support@nexora.ai and we'll get back to you.";
       } else {
-        reply = `I couldn't resolve that query from your ${isBusiness ? 'Business' : 'Personal'} records. Try asking about inventory, receivables, payables${isBusiness ? '' : ', expenses, goals'} or say "hello".`;
+        reply = `I couldn't resolve that query from your ${isBusiness ? 'Business' : 'Personal'} records. You can ask about:\n• ${isBusiness ? 'inventory value, stock alerts, receivables, payables' : 'expenses, balance, goals'}\n• savings tips, optimization\n• or just say "hello"!`;
       }
 
       setMessages(prev => [...prev, { sender: 'ai', text: reply }]);

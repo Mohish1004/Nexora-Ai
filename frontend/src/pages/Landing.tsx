@@ -75,7 +75,7 @@ export default function Landing() {
           <a href="#features" className="landing-nav-link">Features</a>
           <a href="#solutions" className="landing-nav-link">Solutions</a>
           <a href="#pricing" className="landing-nav-link">Pricing</a>
-          <a href="#contact" className="landing-nav-link">Contact</a>
+          <button onClick={() => navigate('/contact')} className="landing-nav-link">Contact</button>
           <button onClick={() => navigate('/about')} className="landing-nav-link">About</button>
           <button onClick={() => navigate('/help')} className="landing-nav-link">Help</button>
         </nav>
@@ -343,7 +343,7 @@ export default function Landing() {
         <div className="flex items-center justify-center gap-6 mb-4">
           <button onClick={() => navigate('/about')} className="hover:text-white transition-colors">About</button>
           <button onClick={() => navigate('/help')} className="hover:text-white transition-colors">Help</button>
-          <a href="#contact" className="hover:text-white transition-colors">Contact</a>
+          <button onClick={() => navigate('/contact')} className="hover:text-white transition-colors text-sm">Contact</button>
         </div>
         <p>&copy; {new Date().getFullYear()} Nexora AI. All rights reserved.</p>
       </footer>

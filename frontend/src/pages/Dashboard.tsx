@@ -1,5 +1,6 @@
 import React from 'react';
 import { useAppStore } from '../store/appStore';
+import AnimatedCounter from '../components/ui/AnimatedCounter';
 import { 
   TrendingUp, 
   Package, 
@@ -39,10 +40,10 @@ export default function Dashboard() {
 
   // --- BUSINESS DATA ---
   const businessKpis = [
-    { name: 'Inventory Value', value: `₹${invValue.toLocaleString()}`, icon: Package, trend: `${inventory.length} Items`, color: 'text-cyan-400' },
-    { name: 'Receivables', value: `₹${receivablesTotal.toLocaleString()}`, icon: ArrowUpRight, trend: `${pendingCount} Pending`, color: 'text-violet-400' },
-    { name: 'Payables Due', value: `₹${payablesTotal.toLocaleString()}`, icon: ArrowDownLeft, trend: `${payables.length} Bills`, color: 'text-yellow-400' },
-    { name: 'Low Stock Alerts', value: `${lowStockCount} Items`, icon: AlertTriangle, trend: lowStockCount > 0 ? 'Action Needed' : 'All Good', color: lowStockCount > 0 ? 'text-amber-500' : 'text-emerald-400' },
+    { name: 'Inventory Value', numValue: invValue, prefix: '₹', suffix: '', icon: Package, trend: `${inventory.length} Items`, color: 'text-cyan-400' },
+    { name: 'Receivables', numValue: receivablesTotal, prefix: '₹', suffix: '', icon: ArrowUpRight, trend: `${pendingCount} Pending`, color: 'text-violet-400' },
+    { name: 'Payables Due', numValue: payablesTotal, prefix: '₹', suffix: '', icon: ArrowDownLeft, trend: `${payables.length} Bills`, color: 'text-yellow-400' },
+    { name: 'Low Stock Alerts', numValue: lowStockCount, prefix: '', suffix: ' Items', icon: AlertTriangle, trend: lowStockCount > 0 ? 'Action Needed' : 'All Good', color: lowStockCount > 0 ? 'text-amber-500' : 'text-emerald-400' },
   ];
 
   const businessChartData = [
@@ -65,9 +66,9 @@ export default function Dashboard() {
 
   // --- PERSONAL DATA ---
   const personalKpis = [
-    { name: 'Outflows (MTD)', value: `₹${expensesTotal.toLocaleString()}`, icon: TrendingDown, trend: `${expenses.length} Entries`, color: 'text-rose-400' },
-    { name: 'Expense Categories', value: `${new Set(expenses.map(e => e.category)).size}`, icon: Wallet, trend: 'Active', color: 'text-emerald-400' },
-    { name: 'Receipts Scanned', value: `${expenses.length}`, icon: TrendingUp, trend: 'MTD Total', color: 'text-cyan-400' },
+    { name: 'Outflows (MTD)', numValue: expensesTotal, prefix: '₹', suffix: '', icon: TrendingDown, trend: `${expenses.length} Entries`, color: 'text-rose-400' },
+    { name: 'Expense Categories', numValue: new Set(expenses.map(e => e.category)).size, prefix: '', suffix: '', icon: Wallet, trend: 'Active', color: 'text-emerald-400' },
+    { name: 'Receipts Scanned', numValue: expenses.length, prefix: '', suffix: '', icon: TrendingUp, trend: 'MTD Total', color: 'text-cyan-400' },
   ];
 
   const personalChartData = [
@@ -108,7 +109,9 @@ export default function Dashboard() {
             <div key={kpi.name} className="glass-card p-6 rounded-2xl border border-white/10 hover:border-white/20 transition-all flex items-center justify-between">
               <div className="space-y-2">
                 <span className="text-[10px] text-gray-500 uppercase font-bold tracking-wider">{kpi.name}</span>
-                <h3 className="text-2xl font-black text-white font-display">{kpi.value}</h3>
+                <h3 className="text-2xl font-black text-white font-display">
+                  <AnimatedCounter value={kpi.numValue} prefix={kpi.prefix} suffix={kpi.suffix} />
+                </h3>
                 <span className="text-[10px] text-emerald-400 font-bold block">{kpi.trend}</span>
               </div>
               <div className={`w-12 h-12 rounded-xl bg-white/5 border border-white/5 flex items-center justify-center ${kpi.color}`}>
@@ -208,7 +211,7 @@ export default function Dashboard() {
             <div className="absolute flex flex-col items-center justify-center">
               <span className="text-[10px] text-gray-500 font-bold uppercase tracking-wider">Total logged</span>
               <span className="text-lg font-black text-white mt-0.5">
-                {isBusiness ? '₹9,50,000' : `₹${expenses.reduce((a, b) => a + b.amount, 0).toLocaleString()}`}
+                {isBusiness ? `₹${invValue.toLocaleString()}` : `₹${expenses.reduce((a, b) => a + b.amount, 0).toLocaleString()}`}
               </span>
             </div>
           </div>

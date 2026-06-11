@@ -21,6 +21,7 @@ import Profile from '../pages/Profile';
 import Settings from '../pages/Settings';
 import About from '../pages/About';
 import Help from '../pages/Help';
+import Contact from '../pages/Contact';
 import FloatingPanel from '../components/ai/FloatingPanel';
 
 interface GuardProps {
@@ -46,6 +47,7 @@ export default function AppRoutes() {
         <Route path="/register" element={<Register />} />
         <Route path="/about" element={<About />} />
         <Route path="/help" element={<Help />} />
+        <Route path="/contact" element={<Contact />} />
         
         {/* Workspace Selector */}
         <Route 
