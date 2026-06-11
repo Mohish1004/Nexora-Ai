@@ -94,6 +94,7 @@ interface AppState {
   payables: Payable[];
   expenses: Expense[];
   goals: Goal[];
+  activeOverlay: 'notification' | 'profile' | 'assistant' | 'command' | 'modal' | null;
 
   login: (name: string, email: string, mode: 'business' | 'personal' | 'both') => void;
   logout: () => void;
@@ -101,8 +102,9 @@ interface AppState {
   setBlobOpacity: (opacity: number) => void;
   setAccentHue: (hue: 'cyan' | 'emerald') => void;
   setActiveWorkspace: (workspace: 'business' | 'personal') => void;
-  fetchAllData: () => Promise<void>;
+  setActiveOverlay: (overlay: AppState['activeOverlay']) => void;
   markNotificationRead: (id: string) => Promise<void>;
+  fetchAllData: () => Promise<void>;
   addProduct: (product: Omit<Product, 'id' | 'status'>) => Promise<void>;
   editProduct: (id: string, updated: Partial<Product>) => Promise<void>;
   deleteProduct: (id: string) => Promise<void>;
@@ -132,10 +134,11 @@ export const useAppStore = create<AppState>((set) => ({
   payables: [],
   expenses: [],
   goals: [],
+  activeOverlay: null,
 
   login: (name, email, mode) => set({
     isAuthenticated: true,
-    user: { name, email, role: 'Standard User', accountBalance: 0, workspaceMode: mode },
+    user: { name, email, role: 'User', accountBalance: 0, workspaceMode: mode },
     activeWorkspace: mode === 'personal' ? 'personal' : 'business',
   }),
 
@@ -169,6 +172,7 @@ export const useAppStore = create<AppState>((set) => ({
   }),
 
   setActiveWorkspace: (workspace) => set({ activeWorkspace: workspace }),
+  setActiveOverlay: (overlay) => set({ activeOverlay: overlay }),
 
   fetchAllData: async () => {
     try {

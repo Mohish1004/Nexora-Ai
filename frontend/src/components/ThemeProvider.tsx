@@ -26,7 +26,7 @@ export default function ThemeProvider({ children }: { children: React.ReactNode 
     if (accentHue === 'emerald') {
       root.style.setProperty('--accent-business', '#00E676');
     } else {
-      root.style.setProperty('--accent-business', '#00D4FF');
+      root.style.setProperty('--accent-business', '#00F0FF');
     }
   }, [accentHue]);
 

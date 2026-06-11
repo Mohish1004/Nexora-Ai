@@ -1,5 +1,5 @@
 import React from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { useAppStore } from '../store/appStore';
 import DashboardLayout from '../layouts/DashboardLayout';
 import Landing from '../pages/Landing';
@@ -35,6 +35,8 @@ function AuthGuard({ children }: GuardProps) {
 
 export default function AppRoutes() {
   const { isAuthenticated } = useAppStore();
+  const location = useLocation();
+  const hideAssistant = location.pathname === '/copilot';
 
   return (
     <>
@@ -169,8 +171,8 @@ export default function AppRoutes() {
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
 
-      {/* Floating AI Panel - desktop only (mobile uses MobileBottomNav) */}
-      {isAuthenticated && (
+      {/* Floating AI Panel - desktop only, hidden on /copilot and mobile */}
+      {isAuthenticated && !hideAssistant && (
         <div className="hidden lg:block">
           <FloatingPanel />
         </div>

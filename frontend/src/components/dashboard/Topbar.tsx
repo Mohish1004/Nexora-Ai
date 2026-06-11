@@ -41,7 +41,7 @@ export default function Topbar({ onToggleSidebar }: { onToggleSidebar?: () => vo
   };
 
   return (
-    <header className="h-20 glass-panel border-b border-white/10 px-4 lg:px-8 flex items-center justify-between fixed top-0 left-0 right-0 z-10">
+    <header className="h-18 glass-panel border-b border-border px-4 lg:px-8 flex items-center justify-between">
       {/* Left section */}
       <div className="flex items-center gap-4">
         <button

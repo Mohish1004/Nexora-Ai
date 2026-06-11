@@ -3,7 +3,6 @@ import { useAppStore } from '../../store/appStore';
 import {
   LayoutDashboard,
   Package,
-  Users,
   ArrowUpRight,
   Receipt,
   Target,
@@ -15,31 +14,35 @@ import {
   Send,
   ArrowDownLeft,
   Briefcase,
+  User,
+  Cpu,
 } from 'lucide-react';
 import { useState } from 'react';
 
 const businessPrimary = [
   { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
   { name: 'Inventory', path: '/inventory', icon: Package },
-  { name: 'Customers', path: '/customers', icon: Users },
-  { name: 'Receivables', path: '/receivables', icon: ArrowUpRight },
+  { name: 'Copilot', path: '/copilot', icon: Cpu },
+  { name: 'Analytics', path: '/reports', icon: BarChart3 },
+  { name: 'Profile', path: '/profile', icon: User },
 ];
 
 const personalPrimary = [
   { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
-  { name: 'Expenses', path: '/expenses', icon: Receipt },
-  { name: 'Goals', path: '/goals', icon: Target },
-  { name: 'Reports', path: '/personal-reports', icon: BarChart3 },
+  { name: 'Copilot', path: '/copilot', icon: Cpu },
+  { name: 'Analytics', path: '/personal-reports', icon: BarChart3 },
+  { name: 'Profile', path: '/profile', icon: User },
 ];
 
 const businessMore = [
-  { name: 'Vendors', path: '/vendors', icon: Briefcase },
+  { name: 'Receivables', path: '/receivables', icon: ArrowUpRight },
   { name: 'Payables', path: '/payables', icon: ArrowDownLeft },
-  { name: 'Reports', path: '/reports', icon: BarChart3 },
+  { name: 'Customers', path: '/customers', icon: Briefcase },
 ];
 
 const personalMore = [
-  { name: 'Reports', path: '/personal-reports', icon: BarChart3 },
+  { name: 'Expenses', path: '/expenses', icon: Receipt },
+  { name: 'Goals', path: '/goals', icon: Target },
 ];
 
 function fuzzyMatch(text: string, patterns: string[]): boolean {
