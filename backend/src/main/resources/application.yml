@@ -21,6 +21,19 @@ management:
       probes:
         enabled: true
 
+logging:
+  level:
+    org.flywaydb: DEBUG
+
+app:
+  security:
+    jwt:
+      secret: 404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
+      expiration-ms: 86400000
+      refresh-expiration-ms: 604800000
+      header: Authorization
+      prefix: "Bearer "
+
 ---
 spring:
   config:
@@ -101,17 +114,3 @@ spring:
         format_sql: false
   flyway:
     enabled: true
-
-logging:
-  level:
-    org.flywaydb: DEBUG
-
-# Application Custom Security & JWT Properties
-app:
-  security:
-    jwt:
-      secret: 404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970 # 256-bit key hex
-      expiration-ms: 86400000 # 24 Hours
-      refresh-expiration-ms: 604800000 # 7 Days
-      header: Authorization
-      prefix: "Bearer "
