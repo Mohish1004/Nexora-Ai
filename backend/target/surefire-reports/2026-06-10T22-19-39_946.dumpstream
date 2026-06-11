@@ -1,5 +1,0 @@
-# Created at 2026-06-10T22:19:40.469
-Boot Manifest-JAR contains absolute paths in classpath 'F:\Projects\NexoraAi\backend\target\test-classes'
-Hint: <argLine>-Djdk.net.URLClassPath.disableClassPathURLCheck=true</argLine>
-'other' has different root
-
