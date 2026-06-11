@@ -23,7 +23,7 @@ export default function Goals() {
   };
 
   const coachRecommendations = [
-    { id: 1, text: 'Reduce Swiggy Food orders by 30%', saving: '₹3,000/mo savings', impact: 'Medium impact (+2.1% progress speed)' },
+    { id: 1, text: 'Reduce dining out and delivery orders by 30%', saving: '₹3,000/mo savings', impact: 'Medium impact (+2.1% progress speed)' },
     { id: 2, text: 'Cancel unused GitHub Copilot personal subscription', saving: '₹850/mo savings', impact: 'Low impact (+0.5% progress speed)' },
     { id: 3, text: 'Consolidate shared streaming subscriptions', saving: '₹1,500/mo savings', impact: 'Medium impact (+1.1% progress speed)' },
   ];

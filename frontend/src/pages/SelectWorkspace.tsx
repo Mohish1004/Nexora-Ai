@@ -17,7 +17,7 @@ export default function SelectWorkspace() {
   const showPersonal = mode === 'personal' || mode === 'both';
 
   return (
-    <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center p-6 relative">
+    <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center p-6 pt-24 relative">
       <div className="liquid-bg">
         <div className="liquid-blob liquid-blob-cyan"></div>
         <div className="liquid-blob liquid-blob-emerald"></div>

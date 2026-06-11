@@ -82,7 +82,7 @@ export default function CopilotWorkspace() {
     'Which items are currently low in stock?',
     'Show outstanding client receivables',
   ] : [
-    'How can I optimize my Swiggy expenses?',
+    'How can I optimize my monthly subscriptions?',
     'Give me my weekly outflow analysis',
     'Am I on track for New Creator Setup goal?',
   ];
