@@ -322,12 +322,16 @@ export default function Expenses() {
               <button 
                 onClick={() => setViewMode('list')}
                 className={`p-1.5 rounded ${viewMode === 'list' ? 'bg-primary-emerald/10 text-primary-emerald' : 'text-gray-500'}`}
+                aria-label="Switch to list view"
+                aria-pressed={viewMode === 'list'}
               >
                 <List size={16} />
               </button>
               <button 
                 onClick={() => setViewMode('card')}
                 className={`p-1.5 rounded ${viewMode === 'card' ? 'bg-primary-emerald/10 text-primary-emerald' : 'text-gray-500'}`}
+                aria-label="Switch to card view"
+                aria-pressed={viewMode === 'card'}
               >
                 <Grid size={16} />
               </button>

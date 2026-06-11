@@ -26,6 +26,7 @@ export interface Customer {
   id: string;
   name: string;
   email: string;
+  phone?: string;
   outstanding: number;
   lastPaymentDate: string;
 }
@@ -74,6 +75,9 @@ export interface Goal {
 interface AppState {
   isAuthenticated: boolean;
   dataLoaded: boolean;
+  theme: 'dark' | 'light';
+  blobOpacity: number;
+  accentHue: 'cyan' | 'emerald';
   user: {
     name: string;
     email: string;
@@ -93,6 +97,9 @@ interface AppState {
 
   login: (name: string, email: string, mode: 'business' | 'personal' | 'both') => void;
   logout: () => void;
+  setTheme: (theme: 'dark' | 'light') => void;
+  setBlobOpacity: (opacity: number) => void;
+  setAccentHue: (hue: 'cyan' | 'emerald') => void;
   setActiveWorkspace: (workspace: 'business' | 'personal') => void;
   fetchAllData: () => Promise<void>;
   markNotificationRead: (id: string) => Promise<void>;
@@ -103,7 +110,7 @@ interface AppState {
   addGoal: (goal: Omit<Goal, 'id'>) => Promise<void>;
   updateGoalAmount: (id: string, amount: number) => Promise<void>;
   sendPaymentReminder: (receivableId: string) => Promise<void>;
-  addCustomer: (customer: { name: string; email: string; outstanding?: number }) => Promise<void>;
+  addCustomer: (customer: { name: string; email: string; phone?: string; outstanding?: number }) => Promise<void>;
   updateCustomer: (id: string, data: Partial<Customer>) => Promise<void>;
   deleteCustomer: (id: string) => Promise<void>;
 }
@@ -111,6 +118,9 @@ interface AppState {
 export const useAppStore = create<AppState>((set) => ({
   isAuthenticated: false,
   dataLoaded: false,
+  theme: (localStorage.getItem('nexora-theme') as 'dark' | 'light') || 'dark',
+  blobOpacity: Number(localStorage.getItem('nexora-blob-opacity')) || 0.35,
+  accentHue: (localStorage.getItem('nexora-accent-hue') as 'cyan' | 'emerald') || 'cyan',
   user: null,
   activeWorkspace: 'business',
 
@@ -128,6 +138,21 @@ export const useAppStore = create<AppState>((set) => ({
     user: { name, email, role: 'Standard User', accountBalance: 0, workspaceMode: mode },
     activeWorkspace: mode === 'personal' ? 'personal' : 'business',
   }),
+
+  setTheme: (theme) => {
+    localStorage.setItem('nexora-theme', theme);
+    set({ theme });
+  },
+
+  setBlobOpacity: (opacity) => {
+    localStorage.setItem('nexora-blob-opacity', String(opacity));
+    set({ blobOpacity: opacity });
+  },
+
+  setAccentHue: (hue) => {
+    localStorage.setItem('nexora-accent-hue', hue);
+    set({ accentHue: hue });
+  },
 
   logout: () => set({
     isAuthenticated: false,

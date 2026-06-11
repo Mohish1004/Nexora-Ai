@@ -295,6 +295,7 @@ export default function Inventory() {
             <button 
               onClick={() => setShowAddModal(false)}
               className="absolute top-4 right-4 text-gray-400 hover:text-white"
+              aria-label="Close modal"
             >
               <X size={16} />
             </button>

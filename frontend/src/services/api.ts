@@ -24,7 +24,7 @@ export const api = {
 
   getCustomers: () => client.get('/customers').then(r => r.data),
 
-  addCustomer: (data: { name: string; email: string; outstanding?: number }) =>
+  addCustomer: (data: { name: string; email: string; phone?: string; outstanding?: number }) =>
     client.post('/customers', data).then(r => r.data),
 
   updateCustomer: (id: string, data: any) =>

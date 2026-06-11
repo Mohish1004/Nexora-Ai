@@ -45,6 +45,16 @@
     --color-error: #FF5252;
   }
 
+  .light {
+    --bg-base: #F8FAFC;
+    --text-primary: #1E293B;
+    --text-secondary: #64748B;
+    --accent-business: #0284C7;
+    --accent-personal: #059669;
+    --color-warning: #D97706;
+    --color-error: #DC2626;
+  }
+
   body {
     background-color: var(--bg-base);
     color: var(--text-primary);
@@ -173,7 +183,7 @@
   position: absolute;
   border-radius: 50%;
   filter: blur(140px);
-  opacity: 0.35; /* Raised from 0.15 to ensure rich glass-overlay contrast */
+  opacity: var(--blob-opacity, 0.35);
   mix-blend-mode: screen;
   pointer-events: none;
 }
@@ -348,4 +358,90 @@
   --sidebar-accent-foreground: #00D4FF;
   --sidebar-border: rgba(255, 255, 255, 0.06);
   --sidebar-ring: rgba(0, 212, 255, 0.3);
+}
+
+.light {
+  --background: #F1F5F9;
+  --foreground: #1E293B;
+  --card: rgba(255, 255, 255, 0.8);
+  --card-foreground: #1E293B;
+  --popover: #FFFFFF;
+  --popover-foreground: #1E293B;
+  --primary: #0284C7;
+  --primary-foreground: #FFFFFF;
+  --secondary: #64748B;
+  --secondary-foreground: #FFFFFF;
+  --muted: rgba(0, 0, 0, 0.05);
+  --muted-foreground: #64748B;
+  --accent: rgba(2, 132, 199, 0.1);
+  --accent-foreground: #0284C7;
+  --destructive: #DC2626;
+  --destructive-foreground: #FFFFFF;
+  --border: rgba(0, 0, 0, 0.08);
+  --input: rgba(0, 0, 0, 0.10);
+  --ring: rgba(2, 132, 199, 0.4);
+  --chart-1: #0284C7;
+  --chart-2: #059669;
+  --chart-3: #7C4DFF;
+  --chart-4: #D97706;
+  --chart-5: #DC2626;
+  --sidebar: #FFFFFF;
+  --sidebar-foreground: #1E293B;
+  --sidebar-primary: #0284C7;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: rgba(2, 132, 199, 0.08);
+  --sidebar-accent-foreground: #0284C7;
+  --sidebar-border: rgba(0, 0, 0, 0.06);
+  --sidebar-ring: rgba(2, 132, 199, 0.3);
+
+  --bg-base: #F8FAFC;
+  --text-primary: #1E293B;
+  --text-secondary: #64748B;
+  --accent-business: #0284C7;
+  --accent-personal: #059669;
+  --color-warning: #D97706;
+  --color-error: #DC2626;
+}
+
+.light .glass-panel {
+  background: rgba(255, 255, 255, 0.75);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+}
+
+.light .glass-card {
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+}
+
+.light .glass-input {
+  background: rgba(0, 0, 0, 0.03);
+  border: 1px solid rgba(0, 0, 0, 0.10);
+  color: #1E293B;
+}
+
+.light .glass-input:focus {
+  background: rgba(255, 255, 255, 0.9);
+  border-color: var(--theme-accent, var(--accent-business));
+}
+
+.light body {
+  background-image: radial-gradient(circle at 50% 50%, rgba(2, 132, 199, 0.03) 0%, transparent 80%);
+}
+
+.light .liquid-bg {
+  background: #F1F5F9;
+}
+
+.light .sidebar-link-active {
+  background: rgba(2, 132, 199, 0.08);
+  border-color: rgba(2, 132, 199, 0.2);
+  color: #0284C7;
+}
+
+.light .sidebar-link-active-emerald {
+  background: rgba(5, 150, 105, 0.08);
+  border-color: rgba(5, 150, 105, 0.2);
+  color: #059669;
 }

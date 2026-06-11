@@ -6,19 +6,24 @@ import {
   Search, 
   ChevronDown, 
   Sparkles, 
-  MessageSquare,
+  Menu,
+  Sun,
+  Moon,
   ShieldCheck, 
   Check, 
   Trash2,
   Briefcase,
   PiggyBank
 } from 'lucide-react';
+import WorkspaceSwitchModal from './WorkspaceSwitchModal';
 
-export default function Topbar() {
+export default function Topbar({ onToggleSidebar }: { onToggleSidebar?: () => void }) {
   const navigate = useNavigate();
   const { 
     activeWorkspace, 
     setActiveWorkspace, 
+    theme, 
+    setTheme, 
     user, 
     notifications, 
     markNotificationRead 
@@ -26,6 +31,7 @@ export default function Topbar() {
 
   const [showNotifications, setShowNotifications] = useState(false);
   const [showProfileCard, setShowProfileCard] = useState(false);
+  const [showWorkspaceModal, setShowWorkspaceModal] = useState(false);
 
   const isBusiness = activeWorkspace === 'business';
   const unreadCount = notifications.filter(n => !n.read).length;
@@ -35,15 +41,25 @@ export default function Topbar() {
   };
 
   return (
-    <header className="h-20 glass-panel border-b border-white/10 w-[calc(100%-16rem)] ml-64 px-8 flex items-center justify-between fixed top-0 right-0 z-10">
-      {/* Search Bar */}
-      <div className="relative w-96">
-        <Search size={16} className="absolute left-3.5 top-3.5 text-gray-500" />
-        <input 
-          type="text" 
-          placeholder="Search ledger items, assets, transactions..."
-          className="w-full pl-10 pr-4 py-2 text-xs glass-input"
-        />
+    <header className="h-20 glass-panel border-b border-white/10 px-4 lg:px-8 flex items-center justify-between fixed top-0 left-0 right-0 z-10">
+      {/* Left section */}
+      <div className="flex items-center gap-4">
+        <button
+          onClick={onToggleSidebar}
+          className="w-10 h-10 rounded-lg glass-card border border-white/10 flex items-center justify-center text-gray-300 hover:text-white hover:border-white/20 transition-all"
+        >
+          <Menu size={18} />
+        </button>
+
+        {/* Search Bar */}
+        <div className="relative w-64 lg:w-96">
+          <Search size={16} className="absolute left-3.5 top-3.5 text-gray-500" />
+          <input 
+            type="text" 
+            placeholder="Search ledger items, assets, transactions..."
+            className="w-full pl-10 pr-4 py-2 text-xs glass-input"
+          />
+        </div>
       </div>
 
       {/* Actions & Profiles */}
@@ -51,7 +67,7 @@ export default function Topbar() {
         
         {/* Workspace Quick Switcher */}
         <button
-          onClick={toggleWorkspace}
+          onClick={() => setShowWorkspaceModal(true)}
           className={`flex items-center gap-2 px-4 py-2 rounded-lg border text-xs font-semibold transition-all duration-300 ${
             isBusiness 
               ? 'border-primary/20 bg-primary/5 text-primary hover:bg-primary/10'
@@ -60,6 +76,14 @@ export default function Topbar() {
         >
           {isBusiness ? <Briefcase size={14} /> : <PiggyBank size={14} />}
           <span>Switch to {isBusiness ? 'Personal' : 'Business'}</span>
+        </button>
+
+        {/* Theme Toggle */}
+        <button
+          onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+          className="w-10 h-10 rounded-lg glass-card flex items-center justify-center hover:border-white/20 transition-all text-gray-300 hover:text-white"
+        >
+          {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
         </button>
 
         {/* Floating AI Status Indicator */}
@@ -185,6 +209,13 @@ export default function Topbar() {
         </div>
 
       </div>
+
+      <WorkspaceSwitchModal
+        open={showWorkspaceModal}
+        onOpenChange={setShowWorkspaceModal}
+        onConfirm={toggleWorkspace}
+        currentWorkspace={activeWorkspace}
+      />
     </header>
   );
 }

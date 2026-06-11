@@ -75,6 +75,7 @@ export default function Landing() {
           <a href="#features" className="landing-nav-link">Features</a>
           <a href="#solutions" className="landing-nav-link">Solutions</a>
           <a href="#pricing" className="landing-nav-link">Pricing</a>
+          <a href="#contact" className="landing-nav-link">Contact</a>
           <button onClick={() => navigate('/about')} className="landing-nav-link">About</button>
           <button onClick={() => navigate('/help')} className="landing-nav-link">Help</button>
         </nav>
@@ -312,14 +313,39 @@ export default function Landing() {
             </div>
           </div>
         </section>
+
+        {/* Contact Section */}
+        <section id="contact" className="w-full py-24 border-t border-white/5">
+          <div className="text-center max-w-xl mx-auto mb-12">
+            <h2 className="text-3xl lg:text-5xl font-black font-display text-white">Get In Touch</h2>
+            <p className="text-gray-400 text-sm mt-4">Questions, partnerships, or feedback — reach out to our team.</p>
+          </div>
+          <div className="max-w-2xl mx-auto glass-card p-8 rounded-2xl border border-white/10">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="flex flex-col items-start text-left">
+                <h3 className="text-sm font-bold text-white">Email</h3>
+                <p className="text-xs text-gray-400 mt-1">hello@nexora.ai</p>
+                <h3 className="text-sm font-bold text-white mt-6">Response Time</h3>
+                <p className="text-xs text-gray-400 mt-1">Usually within 24 hours</p>
+              </div>
+              <div className="flex flex-col items-start text-left">
+                <h3 className="text-sm font-bold text-white">Location</h3>
+                <p className="text-xs text-gray-400 mt-1">Remote-first, global team</p>
+                <h3 className="text-sm font-bold text-white mt-6">Support</h3>
+                <p className="text-xs text-gray-400 mt-1">support@nexora.ai</p>
+              </div>
+            </div>
+          </div>
+        </section>
       </main>
 
       <footer className="w-full border-t border-white/5 py-12 mt-20 text-center text-xs text-gray-500 z-10 relative">
         <div className="flex items-center justify-center gap-6 mb-4">
           <button onClick={() => navigate('/about')} className="hover:text-white transition-colors">About</button>
           <button onClick={() => navigate('/help')} className="hover:text-white transition-colors">Help</button>
+          <a href="#contact" className="hover:text-white transition-colors">Contact</a>
         </div>
-        <p>&copy; {new Date().getFullYear()} Nexora AI. Developed for elite engineering audits. All rights reserved.</p>
+        <p>&copy; {new Date().getFullYear()} Nexora AI. All rights reserved.</p>
       </footer>
     </div>
   );

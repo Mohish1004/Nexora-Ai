@@ -42,8 +42,31 @@ const personalMore = [
   { name: 'Reports', path: '/personal-reports', icon: BarChart3 },
 ];
 
+function fuzzyMatch(text: string, patterns: string[]): boolean {
+  const lower = text.toLowerCase().replace(/[^a-z0-9\s]/g, '');
+  return patterns.some(p => {
+    const words = p.toLowerCase().split(/\s+/);
+    return words.every(w => lower.includes(w));
+  });
+}
+
+function detectIntent(text: string): string {
+  const lower = text.toLowerCase().trim();
+  if (/^(hi|hello|hey|yo|sup|howdy)\b/.test(lower)) return 'greeting';
+  if (/\b(thanks|thank|ty|appreciate)\b/.test(lower)) return 'thanks';
+  if (fuzzyMatch(text, ['inventory value', 'stock worth', 'total inventory', 'product value'])) return 'inventory_value';
+  if (fuzzyMatch(text, ['low stock', 'out of stock', 'stock alert', 'whats low'])) return 'low_stock';
+  if (fuzzyMatch(text, ['receivable', 'outstanding', 'whats owed', 'customer owes', 'money coming'])) return 'receivables';
+  if (fuzzyMatch(text, ['payable', 'what i owe', 'vendor payment', 'bill due', 'money outgoing'])) return 'payables';
+  if (fuzzyMatch(text, ['expense', 'spending', 'i spent', 'where money go'])) return 'expenses';
+  if (fuzzyMatch(text, ['balance', 'net worth', 'current balance', 'total money', 'how much i have'])) return 'balance';
+  if (fuzzyMatch(text, ['goal', 'saving', 'target', 'save money'])) return 'goals';
+  if (fuzzyMatch(text, ['saas', 'contract', 'subscription', 'recurring'])) return 'saas_audit';
+  return 'unknown';
+}
+
 function AiChatBubble({ isBusiness }: { isBusiness: boolean }) {
-  const { user } = useAppStore();
+  const { user, inventory, receivables, payables, expenses, goals } = useAppStore();
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Array<{ sender: 'ai' | 'user'; text: string }>>([
     { sender: 'ai', text: `Hello ${user?.name || 'there'}! Ask me about your ${isBusiness ? 'inventory, customers, and receivables' : 'expenses, goals, and savings'}.` }
@@ -56,8 +79,52 @@ function AiChatBubble({ isBusiness }: { isBusiness: boolean }) {
     setMessages(prev => [...prev, { sender: 'user', text: userText }]);
     setInput('');
     setTimeout(() => {
-      setMessages(prev => [...prev, { sender: 'ai', text: "AI response coming soon. I'm scanning your records." }]);
-    }, 1000);
+      const intent = detectIntent(userText);
+      let reply = '';
+      if (intent === 'greeting') {
+        reply = `Hey ${user?.name || 'there'}! ${isBusiness ? 'Your business' : 'Your personal'} workspace is ready. What do you want to check?`;
+      } else if (intent === 'thanks') {
+        reply = `Anytime, ${user?.name || 'boss'}!`;
+      } else if (intent === 'inventory_value') {
+        if (!isBusiness) { reply = "Inventory tracking is in the Business workspace."; }
+        else {
+          const total = inventory.reduce((s, p) => s + p.purchasePrice * p.stock, 0);
+          reply = inventory.length === 0 ? "Your inventory is empty." : `Total inventory value: ₹${total.toLocaleString()} across ${inventory.length} items.`;
+        }
+      } else if (intent === 'low_stock') {
+        if (!isBusiness) { reply = "Stock alerts are in the Business workspace."; }
+        else {
+          const low = inventory.filter(p => p.status === 'Low Stock' || p.status === 'Out of Stock');
+          reply = low.length === 0 ? "All items well-stocked!" : `${low.length} item(s) low: ${low.map(p => p.name).join(', ')}.`;
+        }
+      } else if (intent === 'receivables') {
+        if (!isBusiness) { reply = "Receivables are in the Business workspace."; }
+        else {
+          const total = receivables.reduce((s, r) => s + r.amount, 0);
+          reply = total === 0 ? "No outstanding receivables." : `Total receivables: ₹${total.toLocaleString()}.`;
+        }
+      } else if (intent === 'payables') {
+        if (!isBusiness) { reply = "Payables are in the Business workspace."; }
+        else {
+          const total = payables.reduce((s, p) => s + p.amount, 0);
+          reply = total === 0 ? "No pending payables." : `Total payables: ₹${total.toLocaleString()}.`;
+        }
+      } else if (intent === 'expenses') {
+        const total = expenses.reduce((s, e) => s + e.amount, 0);
+        reply = total === 0 ? "No expenses logged yet." : `Total expenses: ₹${total.toLocaleString()} across ${expenses.length} entries.`;
+      } else if (intent === 'balance') {
+        const total = expenses.reduce((s, e) => s + e.amount, 0);
+        reply = `${expenses.length} transaction(s) logged totaling ₹${total.toLocaleString()}.`;
+      } else if (intent === 'goals') {
+        if (isBusiness) { reply = "Goals are in the Personal workspace."; }
+        else {
+          reply = goals.length === 0 ? "No goals set yet." : `${goals.length} goal(s): ${goals.map(g => `${g.title} (${Math.round(g.currentAmount/g.targetAmount*100)}%)`).join(', ')}.`;
+        }
+      } else {
+        reply = `Try asking about ${isBusiness ? 'inventory, receivables, or payables' : 'expenses, goals, or balance'}!`;
+      }
+      setMessages(prev => [...prev, { sender: 'ai', text: reply }]);
+    }, 800);
   };
 
   const accent = isBusiness ? 'bg-primary' : 'bg-primary-emerald';

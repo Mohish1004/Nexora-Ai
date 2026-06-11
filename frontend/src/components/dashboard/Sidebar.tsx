@@ -20,7 +20,7 @@ import {
   LifeBuoy
 } from 'lucide-react';
 
-export default function Sidebar() {
+export default function Sidebar({ onClose }: { onClose?: () => void }) {
   const navigate = useNavigate();
   const location = useLocation();
   const { activeWorkspace, setActiveWorkspace, logout, user } = useAppStore();
@@ -81,7 +81,7 @@ export default function Sidebar() {
           return (
             <button
               key={link.name}
-              onClick={() => navigate(link.path)}
+              onClick={() => { navigate(link.path); onClose?.(); }}
               className={`group w-full flex items-center gap-3.5 px-4 py-3 rounded-lg border text-sm font-medium transition-all duration-300 ${
                 isActive 
                   ? `${activeBgClass} border-l-4` 
@@ -98,14 +98,14 @@ export default function Sidebar() {
       {/* About & Help Links */}
       <div className="px-4 py-3 space-y-1 border-t border-white/5">
         <button
-          onClick={() => navigate('/about')}
+          onClick={() => { navigate('/about'); onClose?.(); }}
           className="group w-full flex items-center gap-3 px-4 py-2 rounded-lg border border-transparent text-gray-400 hover:border-white/10 hover:bg-white/5 hover:text-white text-xs font-medium transition-all duration-300"
         >
           <Info size={16} />
           <span>About</span>
         </button>
         <button
-          onClick={() => navigate('/help')}
+          onClick={() => { navigate('/help'); onClose?.(); }}
           className="group w-full flex items-center gap-3 px-4 py-2 rounded-lg border border-transparent text-gray-400 hover:border-white/10 hover:bg-white/5 hover:text-white text-xs font-medium transition-all duration-300"
         >
           <LifeBuoy size={16} />
@@ -126,7 +126,7 @@ export default function Sidebar() {
         </div>
         
         <button
-          onClick={() => navigate('/settings')}
+          onClick={() => { navigate('/settings'); onClose?.(); }}
           className="w-full flex items-center gap-2 px-3 py-2 text-xs text-gray-400 hover:text-white rounded transition-colors"
         >
           <Settings size={14} />
@@ -136,7 +136,7 @@ export default function Sidebar() {
         <div className="border-t border-white/5 my-2" />
 
         <button
-          onClick={() => navigate('/about')}
+          onClick={() => { navigate('/about'); onClose?.(); }}
           className="w-full flex items-center gap-2 px-3 py-2 text-xs text-gray-400 hover:text-white rounded transition-colors"
         >
           <Info size={14} />
@@ -144,7 +144,7 @@ export default function Sidebar() {
         </button>
 
         <button
-          onClick={() => navigate('/help')}
+          onClick={() => { navigate('/help'); onClose?.(); }}
           className="w-full flex items-center gap-2 px-3 py-2 text-xs text-gray-400 hover:text-white rounded transition-colors"
         >
           <LifeBuoy size={14} />
@@ -155,6 +155,7 @@ export default function Sidebar() {
           onClick={() => {
             logout();
             navigate('/');
+            onClose?.();
           }}
           className="w-full flex items-center gap-2 px-3 py-2 text-xs text-red-400 hover:text-red-300 hover:bg-red-500/5 rounded transition-colors"
         >
