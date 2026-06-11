@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { BrowserRouter } from 'react-router-dom';
+import { Analytics } from '@vercel/analytics/react';
 import AppRoutes from './routes/AppRoutes';
 import { useAppStore } from './store/appStore';
 
@@ -17,6 +18,7 @@ export default function App() {
   return (
     <BrowserRouter>
       <AppRoutes />
+      <Analytics />
     </BrowserRouter>
   );
 }
