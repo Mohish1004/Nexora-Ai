@@ -88,7 +88,7 @@ export default function CopilotWorkspace() {
   ];
 
   return (
-    <div className="h-[calc(100vh-8rem)] flex flex-col justify-between animate-float-slow">
+    <div className="h-[calc(100vh-8rem)] flex flex-col justify-between">
       {/* Header */}
       <div className="border-b border-white/10 pb-4 mb-4 flex justify-between items-center">
         <div>

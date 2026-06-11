@@ -6,7 +6,7 @@ export default function Profile() {
   const { user } = useAppStore();
 
   return (
-    <div className="space-y-8 animate-float-medium">
+    <div className="space-y-8">
       {/* Title */}
       <div>
         <h2 className="text-3xl font-black text-white font-display">Command Profile</h2>

@@ -25,7 +25,7 @@ export default function Customers() {
   };
 
   return (
-    <div className="space-y-8 animate-float-slow">
+    <div className="space-y-8">
       {/* Title */}
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div>

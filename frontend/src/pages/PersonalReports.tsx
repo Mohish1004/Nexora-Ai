@@ -30,7 +30,7 @@ export default function PersonalReports() {
   ];
 
   return (
-    <div className="space-y-8 animate-float-slow">
+    <div className="space-y-8">
       {/* Title */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>

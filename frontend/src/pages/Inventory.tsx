@@ -76,7 +76,7 @@ export default function Inventory() {
 
 
   return (
-    <div className="space-y-8 animate-float-medium">
+    <div className="space-y-8">
       {/* Header */}
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div>

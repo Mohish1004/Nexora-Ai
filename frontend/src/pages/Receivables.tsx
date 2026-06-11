@@ -7,7 +7,8 @@ export default function Receivables() {
   const totalOutstanding = receivables.reduce((sum, item) => sum + item.amount, 0);
 
   // Grouping receivables for timeline lanes
-  const dueToday = receivables.filter(r => r.daysRemaining <= 2);
+  const overdue = receivables.filter(r => r.daysRemaining <= 0);
+  const dueSoon = receivables.filter(r => r.daysRemaining > 0 && r.daysRemaining <= 2);
   const dueThisWeek = receivables.filter(r => r.daysRemaining > 2 && r.daysRemaining <= 7);
   const currentLater = receivables.filter(r => r.daysRemaining > 7);
 
@@ -28,7 +29,7 @@ export default function Receivables() {
   };
 
   return (
-    <div className="space-y-8 animate-float-slow">
+    <div className="space-y-8">
       {/* Title & Stats */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
@@ -47,22 +48,22 @@ export default function Receivables() {
       </div>
 
       {/* Visual Timeline Lanes */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Lane 1: Urgent (0-2 Days Left) */}
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        {/* Lane 1: Overdue (0 or negative days) */}
         <div className="glass-card p-6 rounded-2xl border border-red-500/20 bg-red-500/[0.01]">
           <div className="flex items-center justify-between border-b border-white/5 pb-3 mb-4">
             <div className="flex items-center gap-2">
               <span className="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse"></span>
-              <h3 className="font-bold text-sm text-white">Overdue & Urgent</h3>
+              <h3 className="font-bold text-sm text-white">Overdue</h3>
             </div>
-            <span className="text-[10px] text-red-400 font-bold font-mono">{dueToday.length} Invoices</span>
+            <span className="text-[10px] text-red-400 font-bold font-mono">{overdue.length} Invoices</span>
           </div>
           
           <div className="space-y-4">
-            {dueToday.length === 0 ? (
-              <div className="p-8 text-center text-xs text-gray-500 border border-dashed border-white/5 rounded-xl">No immediate risk invoices.</div>
+            {overdue.length === 0 ? (
+              <div className="p-8 text-center text-xs text-gray-500 border border-dashed border-white/5 rounded-xl">No overdue invoices.</div>
             ) : (
-              dueToday.map((item) => (
+              overdue.map((item) => (
                 <div key={item.id} className="p-4 rounded-xl border glass-card border-red-500/10 space-y-3">
                   <div className="flex justify-between items-start">
                     <h4 className="text-xs font-bold text-white truncate max-w-[120px]">{item.customerName}</h4>
@@ -70,8 +71,8 @@ export default function Receivables() {
                   </div>
                   <div className="flex items-center justify-between text-[10px]">
                     <span className="text-gray-400 flex items-center gap-1">
-                      <Clock size={12} className="text-red-400" />
-                      <span>{item.daysRemaining} days left</span>
+                      <AlertCircle size={12} className="text-red-400" />
+                      <span>{Math.abs(item.daysRemaining)} days overdue</span>
                     </span>
                     <button 
                       onClick={() => handleReminder(item.id, item.customerName)}

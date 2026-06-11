@@ -11,7 +11,7 @@ export default function Settings() {
   const accentText = isBusiness ? 'text-primary' : 'text-primary-emerald';
 
   return (
-    <div className="space-y-8 animate-float-medium">
+    <div className="space-y-8">
       {/* Title */}
       <div>
         <h2 className="text-3xl font-black text-white font-display">Workspace Configuration</h2>

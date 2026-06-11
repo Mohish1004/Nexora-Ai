@@ -12,7 +12,7 @@ export default function Payables() {
   const dueLater = payables.filter(p => !p.dueDate.includes('12') && !p.dueDate.includes('13') && !p.dueDate.includes('15') && !p.dueDate.includes('14'));
 
   return (
-    <div className="space-y-8 animate-float-slow">
+    <div className="space-y-8">
       {/* Title & Stats */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
