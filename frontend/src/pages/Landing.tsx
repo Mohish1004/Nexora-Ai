@@ -72,19 +72,19 @@ export default function Landing() {
         </div>
 
         <nav className="hidden md:flex items-center gap-8 text-sm text-gray-400 font-medium">
-          <a href="#features" className="landing-nav-link">Features</a>
-          <a href="#solutions" className="landing-nav-link">Solutions</a>
-          <a href="#pricing" className="landing-nav-link">Pricing</a>
-          <button onClick={() => navigate('/contact')} className="landing-nav-link">Contact</button>
-          <button onClick={() => navigate('/about')} className="landing-nav-link">About</button>
-          <button onClick={() => navigate('/help')} className="landing-nav-link">Help</button>
+          <a href="#features" className="hover:text-white transition-colors">Features</a>
+          <a href="#solutions" className="hover:text-white transition-colors">Solutions</a>
+          <a href="#pricing" className="hover:text-white transition-colors">Pricing</a>
+          <button onClick={() => navigate('/contact')} className="hover:text-white transition-colors">Contact</button>
+          <button onClick={() => navigate('/about')} className="hover:text-white transition-colors">About</button>
+          <button onClick={() => navigate('/help')} className="hover:text-white transition-colors">Help</button>
         </nav>
 
         <div className="flex items-center gap-4">
           {isAuthenticated ? (
             <button 
               onClick={() => navigate('/dashboard')} 
-              className="btn-glass px-5 py-2.5 rounded-lg bg-primary/10 border-primary/20 text-primary hover:bg-primary/20 flex items-center gap-1.5 text-sm font-semibold"
+              className="px-5 py-2.5 rounded-lg bg-primary/10 border-primary/20 text-primary hover:bg-primary/20 flex items-center gap-1.5 text-sm font-semibold transition-all"
             >
               <span>Command Center</span>
               <ArrowRight size={14} />
@@ -126,14 +126,14 @@ export default function Landing() {
             <div className="flex flex-wrap gap-4 mt-8">
               <button 
                 onClick={() => navigate('/register')}
-                className="landing-hover-btn px-8 py-4 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-semibold text-base shadow-lg flex items-center gap-2"
+                className="px-8 py-4 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-semibold text-base shadow-lg hover:shadow-[0_0_40px_rgba(0,212,255,0.3)] hover:-translate-y-1 transition-all duration-300 flex items-center gap-2"
               >
                 <span>Initialize Platform</span>
                 <ArrowRight size={18} />
               </button>
               <button 
                 onClick={() => navigate('/login')}
-                className="landing-hover-btn px-8 py-4 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white font-semibold text-base flex items-center gap-2"
+                className="px-8 py-4 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white font-semibold text-base hover:-translate-y-1 hover:shadow-[0_0_30px_rgba(255,255,255,0.05)] transition-all duration-300 flex items-center gap-2"
               >
                 Launch Demo Desk
               </button>
@@ -198,8 +198,8 @@ export default function Landing() {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-16">
             {/* Feature 1 */}
-            <div className="landing-hover-card glass-card p-8 rounded-2xl flex flex-col items-start text-left">
-              <div className="w-12 h-12 rounded-xl bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+            <div className="group glass-card p-8 rounded-2xl flex flex-col items-start text-left hover:-translate-y-2 hover:border-cyan-500/40 hover:shadow-[0_0_50px_rgba(0,212,255,0.12)] transition-all duration-500">
+              <div className="w-12 h-12 rounded-xl bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 flex items-center justify-center mb-6 group-hover:scale-110 group-hover:bg-cyan-500/20 transition-all duration-300">
                 <Activity size={20} />
               </div>
               <h3 className="font-bold text-lg text-white">Business Cash & Inventory</h3>
@@ -209,8 +209,8 @@ export default function Landing() {
             </div>
 
             {/* Feature 2 */}
-            <div className="landing-hover-card glass-card p-8 rounded-2xl flex flex-col items-start text-left">
-              <div className="w-12 h-12 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+            <div className="group glass-card p-8 rounded-2xl flex flex-col items-start text-left hover:-translate-y-2 hover:border-emerald-500/40 hover:shadow-[0_0_50px_rgba(0,230,118,0.12)] transition-all duration-500">
+              <div className="w-12 h-12 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center justify-center mb-6 group-hover:scale-110 group-hover:bg-emerald-500/20 transition-all duration-300">
                 <Layers size={20} />
               </div>
               <h3 className="font-bold text-lg text-white">Dual-Workspace Sandboxing</h3>
@@ -220,8 +220,8 @@ export default function Landing() {
             </div>
 
             {/* Feature 3 */}
-            <div className="landing-hover-card glass-card p-8 rounded-2xl flex flex-col items-start text-left">
-              <div className="w-12 h-12 rounded-xl bg-violet-500/10 text-violet-400 border border-violet-500/20 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+            <div className="group glass-card p-8 rounded-2xl flex flex-col items-start text-left hover:-translate-y-2 hover:border-violet-500/40 hover:shadow-[0_0_50px_rgba(124,77,255,0.12)] transition-all duration-500">
+              <div className="w-12 h-12 rounded-xl bg-violet-500/10 text-violet-400 border border-violet-500/20 flex items-center justify-center mb-6 group-hover:scale-110 group-hover:bg-violet-500/20 transition-all duration-300">
                 <ShieldCheck size={20} />
               </div>
               <h3 className="font-bold text-lg text-white">AI-Driven Auditing</h3>
@@ -275,7 +275,7 @@ export default function Landing() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
             {/* Plan 1 */}
-            <div className="landing-hover-card glass-card p-8 rounded-2xl border border-white/10 flex flex-col items-start relative overflow-hidden">
+            <div className="group glass-card p-8 rounded-2xl border border-white/10 flex flex-col items-start relative overflow-hidden hover:-translate-y-2 hover:shadow-[0_0_50px_rgba(255,255,255,0.05)] transition-all duration-500">
               <h3 className="text-lg font-bold text-white">Starter Pilot</h3>
               <p className="text-xs text-gray-400 mt-2">Perfect for single workspace managers.</p>
               <div className="text-4xl font-black text-white mt-6 font-display">₹0 <span className="text-xs text-gray-500 font-normal">/ forever</span></div>
@@ -293,7 +293,7 @@ export default function Landing() {
             </div>
 
             {/* Plan 2 */}
-            <div className="landing-hover-card glass-card p-8 rounded-2xl border-2 border-cyan-500/30 flex flex-col items-start relative overflow-hidden bg-white/[0.04]">
+            <div className="group glass-card p-8 rounded-2xl border-2 border-cyan-500/30 flex flex-col items-start relative overflow-hidden bg-white/[0.04] hover:-translate-y-2 hover:border-cyan-500/50 hover:shadow-[0_0_50px_rgba(0,212,255,0.15)] transition-all duration-500">
               <div className="absolute top-4 right-4 px-2 py-0.5 rounded bg-cyan-500/20 text-[9px] uppercase font-bold text-cyan-400 tracking-wider">Most Premium</div>
               <h3 className="text-lg font-bold text-white">Enterprise Nexus</h3>
               <p className="text-xs text-gray-400 mt-2">Dual workspace access and advanced AI modules.</p>
