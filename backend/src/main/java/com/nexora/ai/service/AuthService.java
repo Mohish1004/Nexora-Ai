@@ -145,6 +145,94 @@ public class AuthService {
                 .build();
     }
 
+    @Transactional
+    public AuthResponse loginWithPhone(PhoneLoginRequest request) {
+        String mockEmail = request.getPhoneNumber() + "@nexora.phone";
+        User user = userRepository.findByEmail(mockEmail)
+                .orElseGet(() -> {
+                    User newUser = User.builder()
+                            .email(mockEmail)
+                            .passwordHash(passwordEncoder.encode(java.util.UUID.randomUUID().toString()))
+                            .fullName("Phone User (" + request.getPhoneNumber() + ")")
+                            .role("USER")
+                            .planType("FREE")
+                            .build();
+                    User savedUser = userRepository.save(newUser);
+
+                    Workspace businessWorkspace = Workspace.builder()
+                            .name(savedUser.getFullName() + "'s Business")
+                            .type("BUSINESS")
+                            .owner(savedUser)
+                            .build();
+                    workspaceRepository.save(businessWorkspace);
+
+                    Workspace personalWorkspace = Workspace.builder()
+                            .name(savedUser.getFullName() + "'s Personal")
+                            .type("PERSONAL")
+                            .owner(savedUser)
+                            .build();
+                    workspaceRepository.save(personalWorkspace);
+
+                    return savedUser;
+                });
+
+        String accessToken = tokenProvider.generateAccessToken(user.getEmail());
+        String refreshToken = tokenProvider.generateRefreshToken(user.getEmail());
+
+        return AuthResponse.builder()
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
+                .email(user.getEmail())
+                .fullName(user.getFullName())
+                .role(user.getRole())
+                .planType(user.getPlanType())
+                .build();
+    }
+
+    @Transactional
+    public AuthResponse loginWithApple(AppleLoginRequest request) {
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseGet(() -> {
+                    User newUser = User.builder()
+                            .email(request.getEmail())
+                            .passwordHash(passwordEncoder.encode(java.util.UUID.randomUUID().toString()))
+                            .fullName(request.getFullName())
+                            .role("USER")
+                            .planType("FREE")
+                            .build();
+                    User savedUser = userRepository.save(newUser);
+
+                    Workspace businessWorkspace = Workspace.builder()
+                            .name(savedUser.getFullName() + "'s Business")
+                            .type("BUSINESS")
+                            .owner(savedUser)
+                            .build();
+                    workspaceRepository.save(businessWorkspace);
+
+                    Workspace personalWorkspace = Workspace.builder()
+                            .name(savedUser.getFullName() + "'s Personal")
+                            .type("PERSONAL")
+                            .owner(savedUser)
+                            .build();
+                    workspaceRepository.save(personalWorkspace);
+
+                    return savedUser;
+                });
+
+        String accessToken = tokenProvider.generateAccessToken(user.getEmail());
+        String refreshToken = tokenProvider.generateRefreshToken(user.getEmail());
+
+        return AuthResponse.builder()
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
+                .email(user.getEmail())
+                .fullName(user.getFullName())
+                .role(user.getRole())
+                .planType(user.getPlanType())
+                .build();
+    }
+
+
 
     public AuthResponse refresh(TokenRefreshRequest request) {
         String email = tokenProvider.getEmailFromToken(request.getRefreshToken());

@@ -34,6 +34,19 @@ public class AuthController {
         return ResponseEntity.ok(ApiResponse.success("Google Authentication successful", response));
     }
 
+    @PostMapping("/phone")
+    public ResponseEntity<ApiResponse<AuthResponse>> phoneLogin(@Valid @RequestBody PhoneLoginRequest request) {
+        AuthResponse response = authService.loginWithPhone(request);
+        return ResponseEntity.ok(ApiResponse.success("Phone Authentication successful", response));
+    }
+
+    @PostMapping("/apple")
+    public ResponseEntity<ApiResponse<AuthResponse>> appleLogin(@Valid @RequestBody AppleLoginRequest request) {
+        AuthResponse response = authService.loginWithApple(request);
+        return ResponseEntity.ok(ApiResponse.success("Apple Authentication successful", response));
+    }
+
+
     @PostMapping("/refresh")
     public ResponseEntity<ApiResponse<AuthResponse>> refresh(@Valid @RequestBody TokenRefreshRequest request) {
         AuthResponse response = authService.refresh(request);

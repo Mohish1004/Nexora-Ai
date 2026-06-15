@@ -25,6 +25,12 @@ export const api = {
   loginWithGoogle: (email: string, fullName: string, idToken: string) =>
     client.post('/auth/google', { email, fullName, idToken }).then(unwrap),
 
+  loginWithPhone: (phoneNumber: string, idToken: string) =>
+    client.post('/auth/phone', { phoneNumber, idToken }).then(unwrap),
+
+  loginWithApple: (email: string, fullName: string, idToken: string) =>
+    client.post('/auth/apple', { email, fullName, idToken }).then(unwrap),
+
   // ── Workspaces ──
   getWorkspaces: () =>
     client.get('/workspaces').then(unwrap),
