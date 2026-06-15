@@ -94,10 +94,10 @@ export default function Sidebar({ onClose }: { onClose?: () => void }) {
               className={`group w-full flex items-center gap-3.5 px-4 py-3 rounded-lg border text-sm font-medium transition-all duration-300 ${
                 isActive
                   ? `${activeBgClass} border-l-4 glow-accent`
-                  : `border-transparent text-secondary ${borderHoverClass} hover:text-white`
+                  : `border-transparent text-secondary ${borderHoverClass} hover:text-foreground`
               }`}
             >
-              <Icon size={18} className={isActive ? '' : 'text-secondary group-hover:text-white transition-colors'} />
+              <Icon size={18} className={isActive ? '' : 'text-secondary group-hover:text-foreground transition-colors'} />
               <span>{link.name}</span>
             </button>
           );
@@ -120,10 +120,10 @@ export default function Sidebar({ onClose }: { onClose?: () => void }) {
                 className={`group w-full flex items-center gap-3 px-4 py-2.5 rounded-lg border text-xs font-medium transition-all duration-300 ${
                   isActive
                     ? `${activeBgClass} border-l-4`
-                    : `border-transparent text-secondary ${borderHoverClass} hover:text-white`
+                    : `border-transparent text-secondary ${borderHoverClass} hover:text-foreground`
                 }`}
               >
-                <Icon size={16} className={isActive ? '' : 'text-secondary group-hover:text-white transition-colors'} />
+                <Icon size={16} className={isActive ? '' : 'text-secondary group-hover:text-foreground transition-colors'} />
                 <span>{link.name}</span>
               </button>
             );
