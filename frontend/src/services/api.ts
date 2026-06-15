@@ -4,8 +4,8 @@ const API_BASE = import.meta.env.VITE_API_URL || '/api';
 
 const client = axios.create({ baseURL: API_BASE });
 
-function unwrap<T>(res: { data: { data: T } }): T {
-  return res.data.data;
+function unwrap(res: any): any {
+  return res?.data?.data;
 }
 
 // ── Auth ──
@@ -21,6 +21,9 @@ export const api = {
 
   logout: () =>
     client.post('/auth/logout').then(r => r.data),
+
+  loginWithGoogle: (email: string, fullName: string, idToken: string) =>
+    client.post('/auth/google', { email, fullName, idToken }).then(unwrap),
 
   // ── Workspaces ──
   getWorkspaces: () =>

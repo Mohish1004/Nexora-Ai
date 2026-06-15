@@ -33,4 +33,20 @@ router.post('/register', (req, res) => {
   });
 });
 
+router.post('/google', (req, res) => {
+  const { email, fullName, idToken } = req.body;
+  res.json({
+    success: true,
+    message: 'Google Authentication successful',
+    data: {
+      accessToken: 'mock-google-access-token',
+      refreshToken: 'mock-google-refresh-token',
+      email: email || 'google-user@nexora.ai',
+      fullName: fullName || 'Google User',
+      role: 'USER',
+      planType: 'FREE',
+    },
+  });
+});
+
 export default router;

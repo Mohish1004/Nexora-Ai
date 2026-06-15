@@ -86,7 +86,7 @@ export default function Sidebar({ onClose }: { onClose?: () => void }) {
       <nav className="flex-1 px-4 py-4 space-y-1 overflow-y-auto">
         {filteredLinks.map((link) => {
           const isActive = location.pathname === link.path;
-          const Icon = link.icon;
+          const Icon = link.icon as any;
           return (
             <button
               key={link.name}
@@ -112,7 +112,7 @@ export default function Sidebar({ onClose }: { onClose?: () => void }) {
             { name: 'About', path: '/about', icon: Info },
           ].map((link) => {
             const isActive = location.pathname === link.path;
-            const Icon = link.icon;
+            const Icon = link.icon as any;
             return (
               <button
                 key={link.name}

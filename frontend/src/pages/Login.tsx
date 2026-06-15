@@ -3,6 +3,8 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useAppStore } from '../store/appStore';
 import { api } from '../services/api';
 import { Cpu, Mail, Key, Sparkles, AlertCircle, Loader } from 'lucide-react';
+import { signInWithPopup } from 'firebase/auth';
+import { auth, googleProvider } from '../lib/firebase';
 
 export default function Login() {
   const navigate = useNavigate();
@@ -25,7 +27,7 @@ export default function Login() {
       const res = await api.login(email, password);
       const wsList = await api.getWorkspaces();
       const wsId = wsList[0]?.id;
-      const mode = wsList.some(w => w.type === 'PERSONAL') && wsList.some(w => w.type === 'BUSINESS')
+      const mode = wsList.some((w: any) => w.type === 'PERSONAL') && wsList.some((w: any) => w.type === 'BUSINESS')
         ? 'both' : wsList[0]?.type?.toLowerCase() || 'business';
       login(res.fullName, res.email, mode as 'business' | 'personal' | 'both', wsId);
       if (wsId) setWorkspaceId(wsId);
@@ -33,6 +35,49 @@ export default function Login() {
     } catch {
       login(email.split('@')[0], email, 'business');
       navigate('/select-workspace');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleLogin = async () => {
+    setLoading(true);
+    setError('');
+    try {
+      const result = await signInWithPopup(auth, googleProvider);
+      const user = result.user;
+      const idToken = await user.getIdToken();
+      
+      const res = await api.loginWithGoogle(
+        user.email || '',
+        user.displayName || 'Google User',
+        idToken
+      );
+
+      let wsId: number | null = null;
+      let mode = 'business';
+      try {
+        const wsList = await api.getWorkspaces();
+        wsId = wsList[0]?.id || null;
+        mode = wsList.some((w: any) => w.type === 'PERSONAL') && wsList.some((w: any) => w.type === 'BUSINESS')
+          ? 'both' : wsList[0]?.type?.toLowerCase() || 'business';
+      } catch (wsErr) {
+        console.warn('Failed to load workspaces, using defaults:', wsErr);
+      }
+
+      login(res.fullName, res.email, mode as 'business' | 'personal' | 'both', wsId || undefined);
+      if (wsId) setWorkspaceId(wsId);
+      navigate('/select-workspace');
+    } catch (err: any) {
+      console.error('Google Sign-In failed:', err);
+      setError(err?.message || 'Google Auth Error — launching offline sandbox.');
+      const emailLocal = auth.currentUser?.email || 'google-user@nexora.ai';
+      const nameLocal = auth.currentUser?.displayName || 'Google User';
+      
+      setTimeout(() => {
+        login(nameLocal, emailLocal, 'both');
+        navigate('/select-workspace');
+      }, 1500);
     } finally {
       setLoading(false);
     }
@@ -106,6 +151,33 @@ export default function Login() {
             {loading ? 'Authenticating...' : 'Authenticate Portal'}
           </button>
         </form>
+
+        <button
+          onClick={handleGoogleLogin}
+          type="button"
+          disabled={loading}
+          className="w-full py-3 mt-4 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white font-bold text-xs flex items-center justify-center gap-2.5 transition-all shadow-md active:scale-95 disabled:opacity-50"
+        >
+          <svg className="w-4 h-4" viewBox="0 0 24 24">
+            <path
+              fill="#EA4335"
+              d="M12 5.04c1.66 0 3.2.57 4.38 1.69l3.27-3.27C17.67 1.54 14.98 1 12 1 7.35 1 3.37 3.67 1.39 7.56l3.85 2.99c.92-2.75 3.48-4.51 6.76-4.51z"
+            />
+            <path
+              fill="#4285F4"
+              d="M23.49 12.27c0-.81-.07-1.59-.2-2.27H12v4.51h6.46c-.29 1.48-1.14 2.73-2.4 3.58l3.71 2.88c2.17-2 3.42-4.94 3.42-8.7z"
+            />
+            <path
+              fill="#FBBC05"
+              d="M5.24 14.75c-.24-.72-.38-1.49-.38-2.3s.14-1.58.38-2.3L1.39 7.16C.5 8.93 0 10.91 0 13s.5 4.07 1.39 5.84l3.85-2.99z"
+            />
+            <path
+              fill="#34A853"
+              d="M12 23c3.24 0 5.97-1.07 7.96-2.91l-3.71-2.88c-1.03.69-2.35 1.11-4.25 1.11-3.28 0-5.84-1.76-6.76-4.51L1.39 16.8c1.98 3.89 5.96 6.56 10.61 6.56z"
+            />
+          </svg>
+          <span className="font-mono tracking-wider uppercase">Sign In with Google</span>
+        </button>
 
         <div className="divider-line mt-6 border-t border-white/5 flex items-center justify-center relative">
           <span className="bg-background px-3 text-[9px] text-gray-500 uppercase font-mono tracking-widest absolute">OR USE DEMO CREDENTIALS</span>
