@@ -17,4 +17,25 @@ export default defineConfig({
       },
     },
   },
+  build: {
+    chunkSizeWarningLimit: 1200,
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            if (id.includes('three') || id.includes('@react-three') || id.includes('lucide-react')) {
+              return 'vendor-3d-icons';
+            }
+            if (id.includes('recharts') || id.includes('d3')) {
+              return 'vendor-charts';
+            }
+            if (id.includes('firebase')) {
+              return 'vendor-firebase';
+            }
+            return 'vendor-core';
+          }
+        },
+      },
+    },
+  },
 })

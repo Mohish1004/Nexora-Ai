@@ -101,7 +101,18 @@
 
 /* === LIQUID GLASS STANDARD ===
    Apply to: Sidebar, Cards, Widgets, Assistant, Modals, Notifications, Profile Menus */
-.glass-panel,
+.glass-panel {
+  background: rgba(10, 10, 10, 0.70);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-top: 1px solid rgba(255, 255, 255, 0.25);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    0 8px 32px rgba(0, 0, 0, 0.25);
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
 .glass-card {
   background: rgba(255, 255, 255, 0.03);
   backdrop-filter: blur(20px) saturate(180%);
@@ -461,4 +472,74 @@
   background: rgba(5, 150, 105, 0.08);
   border-color: rgba(5, 150, 105, 0.2);
   color: #059669;
+}
+
+/* Light Mode Global Utility Contrast Overrides */
+.light h1.text-white,
+.light h2.text-white,
+.light h3.text-white,
+.light h4.text-white,
+.light h5.text-white,
+.light h6.text-white,
+.light p.text-white,
+.light span.text-white:not(button *):not([class*="bg-"]):not([class*="from-"]):not([class*="sidebar-link-active"]):not([class*="text-primary"]),
+.light td.text-white,
+.light th.text-white,
+.light div.text-white:not([class*="bg-"]):not([class*="from-"]):not(button *):not([class*="sidebar-link-active"]),
+.light label.text-white {
+  color: var(--text-primary) !important;
+}
+
+.light .text-white\/90,
+.light .text-white\/80,
+.light .text-white\/70,
+.light .text-white\/60,
+.light .text-white\/50 {
+  color: var(--text-secondary) !important;
+}
+
+.light h1.text-gray-300,
+.light h2.text-gray-300,
+.light h3.text-gray-300,
+.light h4.text-gray-300,
+.light h5.text-gray-300,
+.light h6.text-gray-300,
+.light p.text-gray-300,
+.light span.text-gray-300:not(button *),
+.light td.text-gray-300,
+.light th.text-gray-300,
+.light div.text-gray-300:not([class*="bg-"]):not(button *),
+.light label.text-gray-300,
+.light h1.text-gray-400,
+.light h2.text-gray-400,
+.light h3.text-gray-400,
+.light h4.text-gray-400,
+.light h5.text-gray-400,
+.light h6.text-gray-400,
+.light p.text-gray-400,
+.light span.text-gray-400:not(button *):not([class*="bg-"]):not([class*="from-"]),
+.light td.text-gray-400,
+.light th.text-gray-400,
+.light div.text-gray-400:not([class*="bg-"]):not(button *),
+.light label.text-gray-400,
+.light a.text-gray-400:hover,
+.light p.text-secondary,
+.light span.text-secondary {
+  color: var(--text-secondary) !important;
+}
+
+.light .border-white\/10,
+.light .border-white\/5,
+.light .border-white\/20,
+.light .border-white\/30,
+.light .border-border {
+  border-color: var(--border) !important;
+}
+
+.light .bg-white\/5,
+.light .bg-white\/10,
+.light .bg-white\/\[0\.04\],
+.light .bg-white\/\[0\.01\],
+.light .bg-white\/\[0\.02\] {
+  background-color: var(--surface) !important;
 }
